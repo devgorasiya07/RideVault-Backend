@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RideVault — Dedicated Rider Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090e17;
+            --surface: #101726;
+            --surface-card: #162034;
+            --surface-border: #1f2e47;
+            --surface-hover: #22334f;
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.25);
+            --primary-hover: #0ea5e9;
+            --accent: #818cf8;
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.14);
+            --warning: #f59e0b;
+            --warning-bg: rgba(245, 158, 11, 0.14);
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.14);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1260px; margin: 0 auto; }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--surface-border);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .brand-container { display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; }
+        .logo-box {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        .brand-title { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+        .brand-sub { font-size: 12px; color: var(--text-muted); }
+        .portal-tag {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+
+        .nav-links { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .nav-link-btn {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            color: var(--text-muted);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .nav-link-btn:hover { color: #fff; border-color: var(--primary); background: var(--surface-hover); }
+        .nav-link-btn.active { color: var(--primary); border-color: var(--primary); background: rgba(56, 189, 248, 0.1); }
+
+        /* GRID & CARDS */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; }
+        .card {
+            background: var(--surface-card);
+            border: 1px solid var(--surface-border);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .card-header h3 { font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+
+        /* AUTH FORMS */
+        .auth-toggle { display: flex; gap: 8px; margin-bottom: 18px; }
+        .auth-toggle button {
+            flex: 1;
+            padding: 9px;
+            background: #0d1422;
+            border: 1px solid var(--surface-border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .auth-toggle button.active { background: var(--primary); color: #000; border-color: var(--primary); }
+
+        .form-group { margin-bottom: 16px; position: relative; }
+        label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select {
+            width: 100%;
+            padding: 11px 14px;
+            background: #0a101a;
+            border: 1px solid var(--surface-border);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .otp-display-banner {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #fff;
+        }
+
+        .demo-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(56, 189, 248, 0.08);
+            border: 1px dashed rgba(56, 189, 248, 0.35);
+            border-radius: 8px;
+            padding: 9px 12px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--primary);
+        }
+        .demo-bar button {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .demo-bar button:hover { background: var(--primary-hover); }
+
+        /* BUTTONS */
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-secondary { background: #1e293b; color: #fff; border: 1px solid #334155; }
+        .btn-secondary:hover { background: #334155; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; width: auto; }
+
+        /* USER BANNER */
+        .auth-banner {
+            background: linear-gradient(90deg, rgba(56, 189, 248, 0.12), rgba(129, 140, 248, 0.08));
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 12px;
+            padding: 14px 20px;
+            margin-bottom: 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .auth-user-info { display: flex; align-items: center; gap: 12px; }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        /* FARE TILES */
+        .fare-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 14px 0; }
+        .fare-tile {
+            background: #0a101a;
+            border: 1px solid var(--surface-border);
+            border-radius: 10px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .fare-tile:hover { border-color: #475569; background: #111a2c; }
+        .fare-tile.selected { border-color: var(--primary); background: rgba(56, 189, 248, 0.12); box-shadow: 0 0 14px var(--primary-glow); }
+        .fare-icon { font-size: 22px; margin-bottom: 4px; }
+        .fare-cat { font-size: 12px; font-weight: 700; color: #fff; }
+        .fare-seats { font-size: 10px; color: var(--text-dim); }
+        .fare-price { font-size: 15px; font-weight: 800; color: var(--primary); margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+
+        /* ROUTE SUMMARY BOX */
+        .route-summary {
+            background: #0a101a;
+            border: 1px solid var(--surface-border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        /* 5-STAGE STATUS STEPPER */
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin: 20px 0;
+            padding: 0 10px;
+        }
+        .stepper::before {
+            content: '';
+            position: absolute;
+            top: 14px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: var(--surface-border);
+            z-index: 1;
+        }
+        .step-item {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .step-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #0a101a;
+            border: 2px solid var(--surface-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-dim);
+            transition: all 0.3s;
+        }
+        .step-item.active .step-circle {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #000;
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+        .step-item.done .step-circle {
+            background: var(--success);
+            border-color: var(--success);
+            color: #fff;
+        }
+        .step-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.5px;
+        }
+        .badge-pending { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-accepted { background: rgba(56, 189, 248, 0.15); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-arrived { background: rgba(129, 140, 248, 0.15); color: var(--accent); border: 1px solid rgba(129, 140, 248, 0.3); }
+        .badge-in_progress { background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid #0ea5e9; }
+        .badge-completed { background: var(--success-bg); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-cancelled { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .feed-item {
+            padding: 14px;
+            background: #0a101a;
+            border: 1px solid var(--surface-border);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+        .terminal {
+            background: #050811;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: #38bdf8;
+            max-height: 220px;
+            overflow-y: auto;
+            line-height: 1.6;
+            margin-top: 14px;
+        }
+        .log-time { color: var(--text-dim); }
+        .log-success { color: var(--success); }
+        .log-warn { color: var(--warning); }
+        .log-error { color: var(--danger); }
+
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            color: #fff;
+            padding: 14px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            display: none;
+            z-index: 9999;
+            font-weight: 600;
+            font-size: 14px;
+            max-width: 420px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <a href="/index.html" class="brand-container">
+                <div class="logo-box">⚡</div>
+                <div>
+                    <div class="brand-title">RideVault <span class="portal-tag">Rider Portal</span></div>
+                    <div class="brand-sub">JWT Secured Account & Dynamic Ride Booking</div>
+                </div>
+            </a>
+
+            <div class="nav-links">
+                <a href="/rider.html" class="nav-link-btn active">👤 Rider Portal</a>
+                <a href="/driver.html" class="nav-link-btn">🚘 Driver Portal</a>
+                <a href="/index.html" class="nav-link-btn">📊 System Hub</a>
+                <a href="/swagger-ui.html" target="_blank" class="nav-link-btn">Swagger API Docs ↗</a>
+            </div>
+        </header>
+
+        <!-- 1. NOT LOGGED IN: PASSWORD AUTH VIEW -->
+        <div id="rider-auth-view" style="max-width: 520px; margin: 30px auto;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>👤 Passenger Account Access</h3>
+                    <span class="badge badge-accepted">BCrypt + JWT</span>
+                </div>
+
+                <div class="auth-toggle">
+                    <button type="button" id="tab-rider-login" class="active" onclick="switchRiderAuthTab('login')">Sign In</button>
+                    <button type="button" id="tab-rider-register" onclick="switchRiderAuthTab('register')">Create Account</button>
+                </div>
+
+                <!-- Sign In Form -->
+                <form id="form-rider-login" onsubmit="handleRiderLogin(event)">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="rider-login-email" required autocomplete="email" placeholder="dev@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="rider-login-password" required minlength="6" autocomplete="current-password" placeholder="Enter your password">
+                    </div>
+                    <button type="submit" id="btn-rider-login" class="btn">Sign In to Rider Portal</button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="form-rider-register" style="display: none;" onsubmit="handleRiderRegister(event)">
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" id="rider-reg-fname" required minlength="2" placeholder="Dev">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" id="rider-reg-lname" required minlength="2" placeholder="Gorasiya">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="rider-reg-email" required autocomplete="email" placeholder="dev@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile Number (10 Digits)</label>
+                        <input type="tel" id="rider-reg-phone" required pattern="[0-9]{10}" placeholder="9876543210">
+                    </div>
+                    <div class="form-group">
+                        <label>Password (Minimum 6 Characters)</label>
+                        <input type="password" id="rider-reg-password" required minlength="6" autocomplete="new-password" placeholder="Choose a password (min 6 chars)">
+                    </div>
+                    <button type="submit" id="btn-rider-register" class="btn btn-success">Create Passenger Account</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. LOGGED IN: DASHBOARD VIEW -->
+        <div id="rider-dash-view" style="display: none;">
+            <div class="auth-banner">
+                <div class="auth-user-info">
+                    <div class="avatar" id="rider-avatar">R</div>
+                    <div>
+                        <strong id="rider-name" style="color: #fff; font-size: 15px;">Rider Name</strong>
+                        <div id="rider-meta" style="font-size: 12px; color: var(--text-muted);">Authenticated via JWT (ROLE_RIDER)</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <input type="tel" id="rider-emergency-input" pattern="[0-9]{10}" placeholder="Emergency 10-digit No" style="width: 175px; padding: 6px 10px; font-size: 12px;">
+                    <button class="btn btn-secondary btn-sm" onclick="saveEmergencyContact()">Save SOS No</button>
+                    <a href="/driver.html" class="btn btn-secondary btn-sm">Switch to Driver Portal 🚘</a>
+                    <button class="btn btn-secondary btn-sm" onclick="logoutRider()">Sign Out</button>
+                </div>
+            </div>
+
+            <div class="grid">
+                <!-- BOOKING MODULE -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🗺️ Book a Dynamic Ride</h3>
+                        <span class="badge badge-accepted">Haversine + Surge</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pickup Location (Gandhinagar / GIFT City)</label>
+                        <select id="rider-pickup" onchange="previewFares()">
+                            <option value="23.1885,72.6285|Infocity IT Park">Infocity IT Park</option>
+                            <option value="23.1610,72.6840|GIFT City Financial Zone">GIFT City Financial Zone</option>
+                            <option value="23.2156,72.6369|Mahatma Mandir Convention Centre">Mahatma Mandir Convention Centre</option>
+                            <option value="23.1873,72.6277|DAIICT Campus">DAIICT Campus</option>
+                            <option value="23.2325,72.6485|Gandhinagar Capital Railway Station">Gandhinagar Capital Railway Station</option>
+                            <option value="23.1554,72.6672|PDPU Knowledge Corridor">PDPU Knowledge Corridor</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Drop-off Destination</label>
+                        <select id="rider-dropoff" onchange="previewFares()">
+                            <option value="23.2156,72.6369|Mahatma Mandir Convention Centre">Mahatma Mandir Convention Centre</option>
+                            <option value="23.1610,72.6840|GIFT City Financial Zone">GIFT City Financial Zone</option>
+                            <option value="23.1885,72.6285|Infocity IT Park">Infocity IT Park</option>
+                            <option value="23.1873,72.6277|DAIICT Campus">DAIICT Campus</option>
+                            <option value="23.2325,72.6485|Gandhinagar Capital Railway Station">Gandhinagar Capital Railway Station</option>
+                            <option value="23.1554,72.6672|PDPU Knowledge Corridor">PDPU Knowledge Corridor</option>
+                        </select>
+                    </div>
+
+                    <label>Choose Vehicle Category (Live Calculated Fares)</label>
+                    <div class="fare-grid">
+                        <div class="fare-tile selected" onclick="selectCategory('SEDAN')">
+                            <div class="fare-icon">🚗</div>
+                            <div class="fare-cat">SEDAN</div>
+                            <div class="fare-seats">4 Seats</div>
+                            <div class="fare-price" id="price-SEDAN">Rs. 210</div>
+                        </div>
+                        <div class="fare-tile" onclick="selectCategory('MINI')">
+                            <div class="fare-icon">🚕</div>
+                            <div class="fare-cat">MINI</div>
+                            <div class="fare-seats">3 Seats</div>
+                            <div class="fare-price" id="price-MINI">Rs. 150</div>
+                        </div>
+                        <div class="fare-tile" onclick="selectCategory('SUV')">
+                            <div class="fare-icon">🚙</div>
+                            <div class="fare-cat">SUV</div>
+                            <div class="fare-seats">6 Seats</div>
+                            <div class="fare-price" id="price-SUV">Rs. 320</div>
+                        </div>
+                        <div class="fare-tile" onclick="selectCategory('PREMIUM')">
+                            <div class="fare-icon">⭐</div>
+                            <div class="fare-cat">PREMIUM</div>
+                            <div class="fare-seats">Luxury</div>
+                            <div class="fare-price" id="price-PREMIUM">Rs. 450</div>
+                        </div>
+                        <div class="fare-tile" onclick="selectCategory('AUTO')">
+                            <div class="fare-icon">🛺</div>
+                            <div class="fare-cat">AUTO</div>
+                            <div class="fare-seats">3 Seats</div>
+                            <div class="fare-price" id="price-AUTO">Rs. 95</div>
+                        </div>
+                        <div class="fare-tile" onclick="selectCategory('BIKE')">
+                            <div class="fare-icon">🏍️</div>
+                            <div class="fare-cat">BIKE</div>
+                            <div class="fare-seats">1 Seat</div>
+                            <div class="fare-price" id="price-BIKE">Rs. 60</div>
+                        </div>
+                    </div>
+
+                    <div class="route-summary">
+                        <div>
+                            <span style="color: var(--text-dim);">Distance:</span>
+                            <strong id="est-dist" style="color: #fff; margin-left: 4px;">9.4 km</strong>
+                        </div>
+                        <div>
+                            <span style="color: var(--text-dim);">Live Surge:</span>
+                            <strong id="est-surge" style="color: var(--warning); margin-left: 4px;">1.0x (Standard)</strong>
+                        </div>
+                    </div>
+
+                    <button class="btn" onclick="bookRide()">Confirm & Book Ride (POST /api/v1/rides/book)</button>
+                </div>
+
+                <!-- LIVE RIDE TRACKER & HISTORY -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📍 Live Trip Tracker</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="restoreActiveRide()">Refresh Status</button>
+                    </div>
+
+                    <div id="rider-active-feed">
+                        <div style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 36px 0;">
+                            No active ride in progress. Select a destination to request your ride.
+                        </div>
+                    </div>
+
+                    <div class="card-header" style="margin-top: 24px;">
+                        <h3>📜 Trip History (Paginated)</h3>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <select id="rider-history-filter" onchange="resetAndFetchHistory()" style="width: auto; padding: 4px 8px; font-size: 12px;">
+                                <option value="">ALL</option>
+                                <option value="COMPLETED">COMPLETED</option>
+                                <option value="CANCELLED">CANCELLED</option>
+                                <option value="PENDING">PENDING</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="rider-history-feed" style="max-height: 260px; overflow-y: auto;">
+                        <!-- Trips loaded via API -->
+                    </div>
+                    <div id="rider-history-pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px; color: var(--text-muted);">
+                        <button class="btn btn-secondary btn-sm" id="btn-rider-prev" onclick="changeRiderPage(-1)">← Prev</button>
+                        <span id="rider-page-info">Page 1 of 1</span>
+                        <button class="btn btn-secondary btn-sm" id="btn-rider-next" onclick="changeRiderPage(1)">Next →</button>
+                    </div>
+
+                    <div class="terminal" id="rider-terminal">
+                        <span class="log-time">[SYSTEM]</span> Rider Portal ready. Secured with BCrypt + JWT.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+
+    <script>
+        let riderToken = localStorage.getItem('ridevault_rider_token') || '';
+        if (!riderToken || riderToken === 'undefined' || riderToken === 'null' || riderToken === 'Bearer undefined') {
+            riderToken = '';
+            localStorage.removeItem('ridevault_rider_token');
+        }
+
+        let selectedCategory = 'SEDAN';
+        let currentActiveRideId = null;
+        let pollTimer = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (riderToken) {
+                showRiderDashboard();
+            }
+        });
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.borderColor = isError ? 'var(--danger)' : 'var(--success)';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 4000);
+        }
+
+        function extractApiError(body, fallback) {
+            if (body && body.fieldErrors) {
+                const firstErr = Object.values(body.fieldErrors)[0];
+                if (firstErr) return firstErr;
+            }
+            return (body && body.message) ? body.message : fallback;
+        }
+
+        // ==============================================================
+        //  PASSWORD AUTHENTICATION LOGIC (BCrypt + Stateless JWT)
+        // ==============================================================
+        function switchRiderAuthTab(tab) {
+            const isLogin = tab === 'login';
+            document.getElementById('tab-rider-login').classList.toggle('active', isLogin);
+            document.getElementById('tab-rider-register').classList.toggle('active', !isLogin);
+            document.getElementById('form-rider-login').style.display = isLogin ? 'block' : 'none';
+            document.getElementById('form-rider-register').style.display = isLogin ? 'none' : 'block';
+        }
+
+        async function handleRiderLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('rider-login-email').value.trim();
+            const password = document.getElementById('rider-login-password').value;
+            const btn = document.getElementById('btn-rider-login');
+            btn.disabled = true;
+            btn.innerText = 'Signing in...';
+
+            try {
+                const res = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(err) {}
+
+                if (!res.ok) {
+                    showToast(extractApiError(body, 'Invalid email or password'), true);
+                    return;
+                }
+
+                if (body.data.role !== 'ROLE_RIDER') {
+                    showToast('This account is registered as a Driver. Please use the Driver Portal.', true);
+                    return;
+                }
+
+                riderToken = body.data.accessToken;
+                localStorage.setItem('ridevault_rider_token', riderToken);
+                showToast(`Welcome back, ${body.data.fullName}!`);
+                showRiderDashboard(body.data);
+            } catch (err) {
+                showToast('Login failed: ' + err.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Sign In to Rider Portal';
+            }
+        }
+
+        async function handleRiderRegister(e) {
+            e.preventDefault();
+            const payload = {
+                firstName: document.getElementById('rider-reg-fname').value.trim(),
+                lastName: document.getElementById('rider-reg-lname').value.trim(),
+                email: document.getElementById('rider-reg-email').value.trim(),
+                phoneNo: document.getElementById('rider-reg-phone').value.trim(),
+                password: document.getElementById('rider-reg-password').value
+            };
+            const btn = document.getElementById('btn-rider-register');
+            btn.disabled = true;
+            btn.innerText = 'Creating Account...';
+
+            try {
+                const res = await fetch('/api/v1/auth/register/rider', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(err) {}
+
+                if (!res.ok) {
+                    showToast(extractApiError(body, 'Registration failed'), true);
+                    return;
+                }
+
+                riderToken = body.data.accessToken;
+                localStorage.setItem('ridevault_rider_token', riderToken);
+                showToast('Passenger account created successfully!');
+                showRiderDashboard(body.data);
+            } catch (err) {
+                showToast('Registration failed: ' + err.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Create Passenger Account';
+            }
+        }
+
+        // ==============================================================
+        //  RIDER DASHBOARD LOGIC
+        // ==============================================================
+        let riderPage = 0;
+        let riderTotalPages = 1;
+
+        async function showRiderDashboard(cachedUser) {
+            document.getElementById('rider-auth-view').style.display = 'none';
+            document.getElementById('rider-dash-view').style.display = 'block';
+
+            if (cachedUser) {
+                document.getElementById('rider-name').innerText = cachedUser.fullName;
+                document.getElementById('rider-meta').innerText = `${cachedUser.phoneNo || cachedUser.email} | Passenger Verified`;
+                document.getElementById('rider-avatar').innerText = (cachedUser.fullName || 'R').charAt(0).toUpperCase();
+            }
+
+            try {
+                const res = await fetch('/api/v1/rider/me', {
+                    headers: { 'Authorization': `Bearer ${riderToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+
+                if (res.ok && body.data) {
+                    document.getElementById('rider-name').innerText = body.data.fullName;
+                    document.getElementById('rider-meta').innerText = `${body.data.phoneNo} | ${body.data.email}`;
+                    document.getElementById('rider-avatar').innerText = (body.data.fullName || 'R').charAt(0).toUpperCase();
+                    document.getElementById('rider-emergency-input').value = body.data.emergencyContact || '';
+                } else if (res.status === 401 || res.status === 403) {
+                    logoutRider();
+                    return;
+                }
+            } catch (e) {}
+
+            previewFares();
+            restoreActiveRide();
+            fetchRiderHistory();
+
+            if (pollTimer) clearInterval(pollTimer);
+            pollTimer = setInterval(restoreActiveRide, 4000);
+        }
+
+        async function saveEmergencyContact() {
+            const emergencyContact = document.getElementById('rider-emergency-input').value.trim();
+            if (emergencyContact && !/^[0-9]{10}$/.test(emergencyContact)) {
+                showToast('Emergency contact must be a valid 10-digit number.', true);
+                return;
+            }
+            try {
+                const res = await fetch('/api/v1/rider/me', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${riderToken}`
+                    },
+                    body: JSON.stringify({ emergencyContact })
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+                if (res.ok) {
+                    showToast('Emergency SOS contact saved!');
+                    logRider('Updated emergency contact in riders table.', 'success');
+                } else {
+                    showToast(body.message || 'Could not update emergency contact', true);
+                }
+            } catch (e) {
+                showToast('Failed to save emergency contact', true);
+            }
+        }
+
+        function logoutRider() {
+            riderToken = '';
+            currentActiveRideId = null;
+            if (pollTimer) clearInterval(pollTimer);
+            localStorage.removeItem('ridevault_rider_token');
+            document.getElementById('rider-dash-view').style.display = 'none';
+            document.getElementById('rider-auth-view').style.display = 'block';
+            showToast('Rider logged out.');
+        }
+
+        function selectCategory(cat) {
+            selectedCategory = cat;
+            document.querySelectorAll('.fare-tile').forEach(t => t.classList.remove('selected'));
+            const tile = document.getElementById(`price-${cat}`)?.closest('.fare-tile');
+            if (tile) tile.classList.add('selected');
+        }
+
+        async function previewFares() {
+            const [pLat, pLng, pName] = document.getElementById('rider-pickup').value.split('|')[0].split(',').concat([document.getElementById('rider-pickup').value.split('|')[1]]);
+            const [dLat, dLng, dName] = document.getElementById('rider-dropoff').value.split('|')[0].split(',').concat([document.getElementById('rider-dropoff').value.split('|')[1]]);
+
+            if (pName === dName) {
+                showToast('Pickup and Drop-off locations cannot be the same!', true);
+                return;
+            }
+
+            try {
+                const url = `/api/v1/rides/estimate-fares?pickupAddress=${encodeURIComponent(pName)}&pickupLat=${pLat}&pickupLng=${pLng}&dropoffAddress=${encodeURIComponent(dName)}&dropoffLat=${dLat}&dropoffLng=${dLng}`;
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${riderToken}` } });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+
+                if (res.ok && body.data) {
+                    const d = body.data;
+                    document.getElementById('est-dist').innerText = `${d.distanceKm} km`;
+                    document.getElementById('est-surge').innerText = `${d.surgeMultiplier}x ${d.surgeMultiplier > 1 ? '(Peak Zone Active)' : '(Standard)'}`;
+
+                    for (const [cat, price] of Object.entries(d.faresByCategory)) {
+                        const el = document.getElementById(`price-${cat}`);
+                        if (el) el.innerText = `Rs. ${price.toFixed(2)}`;
+                    }
+                }
+            } catch (e) {}
+        }
+
+        async function bookRide() {
+            if (!riderToken) {
+                showToast('Please login as a Rider first!', true);
+                logoutRider();
+                return;
+            }
+
+            const [pLat, pLng, pName] = document.getElementById('rider-pickup').value.split('|')[0].split(',').concat([document.getElementById('rider-pickup').value.split('|')[1]]);
+            const [dLat, dLng, dName] = document.getElementById('rider-dropoff').value.split('|')[0].split(',').concat([document.getElementById('rider-dropoff').value.split('|')[1]]);
+
+            if (pName === dName) {
+                showToast('Pickup and Drop-off locations cannot be the same!', true);
+                return;
+            }
+
+            const payload = {
+                pickupAddress: pName,
+                pickupLat: parseFloat(pLat),
+                pickupLng: parseFloat(pLng),
+                dropoffAddress: dName,
+                dropoffLat: parseFloat(dLat),
+                dropoffLng: parseFloat(dLng),
+                vehicleCategory: selectedCategory
+            };
+
+            logRider(`POST /api/v1/rides/book with category: ${selectedCategory}...`);
+
+            try {
+                const res = await fetch('/api/v1/rides/book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${riderToken}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) { body = { message: text }; }
+
+                if (!res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        showToast('Session expired. Please log in again.', true);
+                        logoutRider();
+                        return;
+                    }
+                    showToast(body.message || 'Ride booking failed', true);
+                    logRider(`[ERROR] ${body.message || 'Booking rejected'}`, 'error');
+                    return;
+                }
+
+                showToast(`Ride #${body.data.rideId} requested successfully!`);
+                logRider(`[SUCCESS] Ride #${body.data.rideId} created in PENDING state. Fare: Rs. ${body.data.estimatedFare}`, 'success');
+                currentActiveRideId = body.data.rideId;
+                renderActiveRide(body.data);
+            } catch (err) {
+                showToast('Booking failed: ' + err.message, true);
+            }
+        }
+
+        // Restore active ride automatically even after page refresh
+        async function restoreActiveRide() {
+            if (!riderToken) return;
+            try {
+                const res = await fetch('/api/v1/rider/active-ride', {
+                    headers: { 'Authorization': `Bearer ${riderToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+
+                if (res.ok && body.data) {
+                    currentActiveRideId = body.data.rideId;
+                    renderActiveRide(body.data);
+                } else if (res.ok && currentActiveRideId && !body.data) {
+                    const endedRideId = currentActiveRideId;
+                    currentActiveRideId = null;
+                    let endedStatus = 'COMPLETED';
+                    try {
+                        const rRes = await fetch(`/api/v1/rides/${endedRideId}`, {
+                            headers: { 'Authorization': `Bearer ${riderToken}` }
+                        });
+                        if (rRes.ok) {
+                            const rBody = await rRes.json();
+                            if (rBody.data && rBody.data.status) endedStatus = rBody.data.status;
+                        }
+                    } catch (e) {}
+
+                    if (endedStatus === 'CANCELLED') {
+                        document.getElementById('rider-active-feed').innerHTML = `<div style="color:var(--warning); text-align:center; padding:30px 0;">⏱ Ride #${endedRideId} was cancelled or auto-expired after timeout. You can book a new ride anytime.</div>`;
+                    } else {
+                        document.getElementById('rider-active-feed').innerHTML = `<div style="color:var(--success); text-align:center; padding:30px 0;">✓ Ride #${endedRideId} completed! You can rate your driver below in Trip History.</div>`;
+                    }
+                    fetchRiderHistory();
+                }
+            } catch (e) {}
+        }
+
+        function resetAndFetchHistory() {
+            riderPage = 0;
+            fetchRiderHistory();
+        }
+
+        function changeRiderPage(delta) {
+            const next = riderPage + delta;
+            if (next >= 0 && next < riderTotalPages) {
+                riderPage = next;
+                fetchRiderHistory();
+            }
+        }
+
+        async function fetchRiderHistory() {
+            const status = document.getElementById('rider-history-filter')?.value || '';
+            const statusQuery = status ? `&status=${encodeURIComponent(status)}` : '';
+            try {
+                const res = await fetch(`/api/v1/rider/rides/paged?page=${riderPage}&size=4${statusQuery}`, {
+                    headers: { 'Authorization': `Bearer ${riderToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+
+                if (res.ok && body.data) {
+                    const pageData = body.data;
+                    const items = pageData.content || [];
+                    riderTotalPages = Math.max(pageData.totalPages || 1, 1);
+
+                    document.getElementById('rider-page-info').innerText = `Page ${pageData.page + 1} of ${riderTotalPages} (${pageData.totalElements} rides)`;
+                    document.getElementById('btn-rider-prev').disabled = pageData.first;
+                    document.getElementById('btn-rider-next').disabled = pageData.last;
+
+                    const feed = document.getElementById('rider-history-feed');
+                    if (items.length === 0) {
+                        feed.innerHTML = '<div style="color: var(--text-muted); font-size: 13px; text-align: center; padding: 15px;">No rides found for this filter.</div>';
+                        return;
+                    }
+                    feed.innerHTML = items.map(r => `
+                        <div class="feed-item">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                <strong>Ride #${r.rideId} (${r.vehicleCategory})</strong>
+                                <span class="badge badge-${r.status.toLowerCase()}">${r.status}</span>
+                            </div>
+                            <div style="font-size:12px; color:var(--text-muted);">${r.pickupAddress} → ${r.dropoffAddress}</div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; flex-wrap:wrap; gap:6px;">
+                                <span style="font-size:12px; color:var(--primary); font-weight:700;">Fare: Rs. ${r.finalFare || r.estimatedFare}</span>
+                                <div style="display:flex; gap:6px; align-items:center;">
+                                    ${r.rated ? `<span style="font-size:11px; color:var(--warning);">★ ${r.ratingStars}/5 Rated</span>` : ''}
+                                    ${r.status === 'COMPLETED' && !r.rated ? `
+                                        <select id="rate-stars-${r.rideId}" style="width:auto; padding:3px 6px; font-size:11px;">
+                                            <option value="5">5 ★</option>
+                                            <option value="4">4 ★</option>
+                                            <option value="3">3 ★</option>
+                                            <option value="2">2 ★</option>
+                                            <option value="1">1 ★</option>
+                                        </select>
+                                        <button class="btn btn-sm" style="padding:3px 8px; font-size:11px;" onclick="submitRideRating(${r.rideId})">Rate</button>
+                                    ` : ''}
+                                    <button class="btn btn-secondary btn-sm" style="padding:3px 8px; font-size:11px;" onclick="toggleRideTimeline(${r.rideId}, 'hist-tl-${r.rideId}')">Timeline</button>
+                                </div>
+                            </div>
+                            <div id="hist-tl-${r.rideId}" style="display:none; margin-top:8px; padding-top:8px; border-top:1px dashed var(--surface-border); font-size:11px; color:var(--text-muted);"></div>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {}
+        }
+
+        async function submitRideRating(rideId) {
+            const stars = parseInt(document.getElementById(`rate-stars-${rideId}`).value);
+            try {
+                const res = await fetch(`/api/v1/rides/${rideId}/rate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${riderToken}`
+                    },
+                    body: JSON.stringify({ stars, comment: 'Rated via Rider Portal' })
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+                if (res.ok) {
+                    showToast(`Submitted ${stars}★ rating for Ride #${rideId}!`);
+                    logRider(`[RATING] Ride #${rideId} rated ${stars}★. Driver avg_rating recalculated in DB.`, 'success');
+                    fetchRiderHistory();
+                } else {
+                    showToast(body.message || 'Could not submit rating', true);
+                }
+            } catch (e) {
+                showToast('Rating failed: ' + e.message, true);
+            }
+        }
+
+        async function toggleRideTimeline(rideId, containerId) {
+            const el = document.getElementById(containerId);
+            if (!el) return;
+            if (el.style.display === 'block') {
+                el.style.display = 'none';
+                return;
+            }
+            try {
+                const res = await fetch(`/api/v1/rides/${rideId}/timeline`, {
+                    headers: { 'Authorization': `Bearer ${riderToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+                if (res.ok && body.data) {
+                    el.innerHTML = body.data.map(l => `
+                        <div style="margin-bottom:4px;">
+                            <strong style="color:var(--primary);">${l.fromStatus} → ${l.toStatus}</strong>
+                            by ${l.changedBy} • <span style="color:var(--text-dim);">${new Date(l.changedAt).toLocaleTimeString()}</span>
+                            ${l.reason ? `(${l.reason})` : ''}
+                        </div>
+                    `).join('') || 'No audit entries.';
+                    el.style.display = 'block';
+                }
+            } catch (e) {}
+        }
+
+        function renderActiveRide(ride) {
+            const feed = document.getElementById('rider-active-feed');
+            const statuses = ['PENDING', 'ACCEPTED', 'ARRIVED', 'IN_PROGRESS', 'COMPLETED'];
+            const currentIndex = statuses.indexOf(ride.status);
+
+            const stepperHtml = `
+                <div class="stepper">
+                    ${statuses.map((st, i) => `
+                        <div class="step-item ${i < currentIndex ? 'done' : (i === currentIndex ? 'active' : '')}">
+                            <div class="step-circle">${i < currentIndex ? '✓' : (i + 1)}</div>
+                            <div class="step-label">${st.replace('_', ' ')}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            const showPinBanner = ride.startPin && ['PENDING', 'ACCEPTED', 'ARRIVED'].includes(ride.status);
+
+            feed.innerHTML = `
+                <div class="feed-item" style="border-left: 4px solid var(--primary);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <strong>Ride #${ride.rideId} — ${ride.vehicleCategory}</strong>
+                        <span class="badge badge-${ride.status.toLowerCase()}">${ride.status}</span>
+                    </div>
+
+                    ${stepperHtml}
+
+                    ${showPinBanner ? `
+                        <div style="background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 10px 14px; margin: 10px 0; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:12px; color:#cbd5e1;">🔑 Share Start PIN with driver to begin trip:</span>
+                            <strong style="font-family:'JetBrains Mono',monospace; font-size:18px; color:var(--success); letter-spacing:3px;">${ride.startPin}</strong>
+                        </div>
+                    ` : ''}
+
+                    <div style="font-size:13px; color:var(--text-muted); margin-top: 10px;">Pickup: <strong>${ride.pickupAddress}</strong></div>
+                    <div style="font-size:13px; color:var(--text-muted);">Drop-off: <strong>${ride.dropoffAddress}</strong></div>
+                    <div style="font-size:14px; color:#fff; font-weight:700; margin: 10px 0; background: #0a101a; padding: 10px; border-radius: 8px;">
+                        Fare: Rs. ${ride.finalFare || ride.estimatedFare} 
+                        ${ride.driverName ? `| Driver: <span style="color:var(--success);">${ride.driverName}</span> (${ride.driverAvgRating ? ride.driverAvgRating + ' ★ • ' : ''}${ride.vehicleModel || 'Vehicle'}${ride.vehiclePlateNo ? ' • ' + ride.vehiclePlateNo : ''})` : '| Waiting for driver to claim...'}
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        ${ride.status === 'PENDING' || ride.status === 'ACCEPTED' ? `
+                            <button class="btn btn-danger btn-sm" onclick="cancelRide(${ride.rideId})">Cancel Request</button>
+                        ` : ''}
+                        <button class="btn btn-secondary btn-sm" onclick="toggleRideTimeline(${ride.rideId}, 'active-tl-${ride.rideId}')">View Timeline</button>
+                    </div>
+                    <div id="active-tl-${ride.rideId}" style="display:none; margin-top:10px; padding-top:8px; border-top:1px dashed var(--surface-border); font-size:11px; color:var(--text-muted);"></div>
+                </div>
+            `;
+        }
+
+        async function cancelRide(rideId) {
+            try {
+                const res = await fetch(`/api/v1/rides/${rideId}/status?targetStatus=CANCELLED&reason=RiderCancelled`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${riderToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+                if (res.ok) {
+                    showToast('Ride request cancelled.');
+                    restoreActiveRide();
+                }
+            } catch (e) {}
+        }
+
+        function logRider(msg, type = 'info') {
+            const t = document.getElementById('rider-terminal');
+            const colorClass = type === 'success' ? 'log-success' : type === 'error' ? 'log-error' : '';
+            t.innerHTML += `<br><span class="log-time">[${new Date().toLocaleTimeString()}]</span> <span class="${colorClass}">${msg}</span>`;
+            t.scrollTop = t.scrollHeight;
+        }
+    </script>
+</body>
+</html>

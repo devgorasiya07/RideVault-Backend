@@ -1,0 +1,11 @@
+# Copy this file to "application-local.yml" (which is gitignored) and set your local secrets.
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ridevault
+    username: postgres
+    password: your_local_postgres_password
+
+application:
+  security:
+    jwt:
+      secret-key: replace-with-your-256-bit-base64-jwt-secret

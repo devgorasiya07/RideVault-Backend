@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RideVault — Dedicated Driver Fleet Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090e17;
+            --surface: #101726;
+            --surface-card: #162034;
+            --surface-border: #1f2e47;
+            --surface-hover: #22334f;
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.25);
+            --primary-hover: #0ea5e9;
+            --accent: #818cf8;
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.14);
+            --warning: #f59e0b;
+            --warning-bg: rgba(245, 158, 11, 0.14);
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.14);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1260px; margin: 0 auto; }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--surface-border);
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .brand-container { display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; }
+        .logo-box {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #059669, #10b981);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+        .brand-title { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+        .brand-sub { font-size: 12px; color: var(--text-muted); }
+        .portal-tag {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+
+        .nav-links { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .nav-link-btn {
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            color: var(--text-muted);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .nav-link-btn:hover { color: #fff; border-color: var(--success); background: var(--surface-hover); }
+        .nav-link-btn.active { color: var(--success); border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+
+        /* GRID & CARDS */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; }
+        .card {
+            background: var(--surface-card);
+            border: 1px solid var(--surface-border);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .card-header h3 { font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+
+        /* FORM CONTROLS */
+        .auth-toggle { display: flex; gap: 8px; margin-bottom: 18px; }
+        .auth-toggle button {
+            flex: 1;
+            padding: 9px;
+            background: #0d1422;
+            border: 1px solid var(--surface-border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .auth-toggle button.active { background: var(--success); color: #fff; border-color: var(--success); }
+
+        .form-group { margin-bottom: 16px; position: relative; }
+        label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select {
+            width: 100%;
+            padding: 11px 14px;
+            background: #0a101a;
+            border: 1px solid var(--surface-border);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus { border-color: var(--success); box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2); }
+        .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .otp-display-banner {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #fff;
+        }
+
+        .demo-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px dashed rgba(16, 185, 129, 0.35);
+            border-radius: 8px;
+            padding: 9px 12px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--success);
+        }
+        .demo-bar button {
+            background: var(--success);
+            color: #fff;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .demo-bar button:hover { background: #059669; }
+
+        /* STATS */
+        .stat-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px;
+            background: #0a101a;
+            border-radius: 10px;
+            margin-bottom: 14px;
+            border-left: 4px solid var(--success);
+        }
+        .stat-val { font-size: 26px; font-weight: 800; color: #fff; margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+
+        .quick-chips { display: flex; gap: 8px; margin-bottom: 10px; }
+        .chip-btn {
+            background: #0a101a;
+            border: 1px solid var(--surface-border);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chip-btn:hover { border-color: var(--warning); color: #fff; }
+
+        /* BUTTONS */
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--success);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:hover { background: #059669; transform: translateY(-1px); }
+        .btn-warning { background: var(--warning); color: #000; }
+        .btn-warning:hover { background: #d97706; }
+        .btn-secondary { background: #1e293b; color: #fff; border: 1px solid #334155; }
+        .btn-secondary:hover { background: #334155; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; width: auto; }
+
+        /* USER BANNER */
+        .auth-banner {
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.12), rgba(56, 189, 248, 0.08));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 14px 20px;
+            margin-bottom: 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .auth-user-info { display: flex; align-items: center; gap: 12px; }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--success);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.5px;
+        }
+        .badge-pending { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-accepted { background: rgba(56, 189, 248, 0.15); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-arrived { background: rgba(129, 140, 248, 0.15); color: var(--accent); border: 1px solid rgba(129, 140, 248, 0.3); }
+        .badge-in_progress { background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid #0ea5e9; }
+        .badge-completed { background: var(--success-bg); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+        .badge-cancelled { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .feed-item {
+            padding: 14px;
+            background: #0a101a;
+            border: 1px solid var(--surface-border);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+        .terminal {
+            background: #050811;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: #38bdf8;
+            max-height: 220px;
+            overflow-y: auto;
+            line-height: 1.6;
+            margin-top: 14px;
+        }
+        .log-time { color: var(--text-dim); }
+        .log-success { color: var(--success); }
+        .log-warn { color: var(--warning); }
+        .log-error { color: var(--danger); }
+
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            color: #fff;
+            padding: 14px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            display: none;
+            z-index: 9999;
+            font-weight: 600;
+            font-size: 14px;
+            max-width: 420px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <a href="/index.html" class="brand-container">
+                <div class="logo-box">⚡</div>
+                <div>
+                    <div class="brand-title">RideVault <span class="portal-tag">Driver Portal</span></div>
+                    <div class="brand-sub">Real-Time Fleet Dispatch & Instant 80% Wallet Payouts</div>
+                </div>
+            </a>
+
+            <div class="nav-links">
+                <a href="/driver.html" class="nav-link-btn active">🚘 Driver Portal</a>
+                <a href="/rider.html" class="nav-link-btn">👤 Rider Portal</a>
+                <a href="/index.html" class="nav-link-btn">📊 System Hub</a>
+                <a href="/swagger-ui.html" target="_blank" class="nav-link-btn">Swagger API Docs ↗</a>
+            </div>
+        </header>
+
+        <!-- 1. NOT LOGGED IN: PASSWORD AUTH VIEW -->
+        <div id="driver-auth-view" style="max-width: 580px; margin: 30px auto;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>🚘 Fleet Driver Authentication</h3>
+                    <span class="badge badge-accepted">BCrypt + JWT</span>
+                </div>
+
+                <div class="auth-toggle">
+                    <button type="button" id="tab-driver-login" class="active" onclick="switchDriverAuthTab('login')">Driver Sign In</button>
+                    <button type="button" id="tab-driver-register" onclick="switchDriverAuthTab('register')">Register Driver & Fleet</button>
+                </div>
+
+                <!-- Driver Login Form -->
+                <form id="form-driver-login" onsubmit="handleDriverLogin(event)">
+                    <div class="form-group">
+                        <label>Registered Email Address</label>
+                        <input type="email" id="driver-login-email" required autocomplete="email" placeholder="driver@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="driver-login-password" required minlength="6" autocomplete="current-password" placeholder="Enter your password">
+                    </div>
+                    <button type="submit" id="btn-driver-login" class="btn">Sign In & Enter Cockpit</button>
+                </form>
+
+                <!-- Driver Registration Form -->
+                <form id="form-driver-register" style="display: none;" onsubmit="handleDriverRegister(event)">
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <input type="text" id="driver-reg-fname" required minlength="2" placeholder="Rajesh">
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <input type="text" id="driver-reg-lname" required minlength="2" placeholder="Sharma">
+                        </div>
+                    </div>
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="driver-reg-email" required autocomplete="email" placeholder="rajesh.driver@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Mobile Number (10 Digits)</label>
+                            <input type="tel" id="driver-reg-phone" required pattern="[0-9]{10}" placeholder="9876543211">
+                        </div>
+                    </div>
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>Password (Min 6 Chars)</label>
+                            <input type="password" id="driver-reg-password" required minlength="6" autocomplete="new-password" placeholder="Choose a password">
+                        </div>
+                        <div class="form-group">
+                            <label>Driving License No</label>
+                            <input type="text" id="driver-reg-license" required minlength="5" placeholder="GJ0120220019283">
+                        </div>
+                    </div>
+
+                    <div class="card-header" style="margin: 12px 0 8px;">
+                        <h3 style="font-size: 13px;">Vehicle & Insurance Details (BCNF Tables 7 & 8)</h3>
+                    </div>
+
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select id="driver-reg-cat">
+                                <option value="SEDAN">SEDAN</option>
+                                <option value="MINI">MINI</option>
+                                <option value="SUV">SUV</option>
+                                <option value="PREMIUM">PREMIUM</option>
+                                <option value="AUTO">AUTO</option>
+                                <option value="BIKE">BIKE</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Make / Model</label>
+                            <input type="text" id="driver-reg-model" required placeholder="Maruti Dzire VXi">
+                        </div>
+                    </div>
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>Year</label>
+                            <input type="number" id="driver-reg-year" required min="2000" max="2030" value="2023">
+                        </div>
+                        <div class="form-group">
+                            <label>Plate No</label>
+                            <input type="text" id="driver-reg-plate" required placeholder="GJ-01-AB-1234">
+                        </div>
+                    </div>
+                    <div class="row-2">
+                        <div class="form-group">
+                            <label>Insurance Policy</label>
+                            <input type="text" id="driver-reg-insurance" required placeholder="POL-992288">
+                        </div>
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="date" id="driver-reg-insexp" required value="2028-12-31">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-driver-register" class="btn">Register Driver & Initialize Wallet</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 2. LOGGED IN: DASHBOARD VIEW -->
+        <div id="driver-dash-view" style="display: none;">
+            <div class="auth-banner">
+                <div class="auth-user-info">
+                    <div class="avatar" id="driver-avatar">D</div>
+                    <div>
+                        <strong id="driver-name" style="color: #fff; font-size: 15px;">Driver Name</strong>
+                        <div id="driver-meta" style="font-size: 12px; color: var(--text-muted);">Vehicle & Wallet Active | Authenticated via JWT</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <button id="btn-driver-availability" class="btn btn-sm" style="width: auto;" onclick="toggleDriverAvailability()">● ONLINE</button>
+                    <a href="/rider.html" class="btn btn-secondary btn-sm">Switch to Rider Portal 👤</a>
+                    <button class="btn btn-secondary btn-sm" onclick="logoutDriver()">Sign Out</button>
+                </div>
+            </div>
+
+            <div class="grid">
+                <!-- DISPATCH & ACTIVE TRIP -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>⚡ Available Rides to Claim</h3>
+                        <button class="btn btn-secondary btn-sm" onclick="fetchAvailableRides()">Scan Incoming</button>
+                    </div>
+
+                    <div style="font-size: 12px; color: var(--text-dim); margin-bottom: 12px;">
+                        Optimistic locking query: <code>WHERE status = 'PENDING'</code>
+                    </div>
+
+                    <div id="driver-available-feed">
+                        <div style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 24px 0;">
+                            No pending ride requests currently available in your category.
+                        </div>
+                    </div>
+
+                    <div class="card-header" style="margin-top: 24px;">
+                        <h3>🚕 Current Active Trip Execution</h3>
+                    </div>
+                    <div id="driver-active-trip-feed">
+                        <div style="color: var(--text-muted); font-size: 13px;">No active trip claimed. Click "Claim Ride" above to accept a passenger.</div>
+                    </div>
+
+                    <div class="terminal" id="driver-terminal">
+                        <span class="log-time">[SYSTEM]</span> Driver Portal active. Listening for ride assignments.
+                    </div>
+                </div>
+
+                <!-- FINANCIAL WALLET & DOUBLE-ENTRY LEDGER -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>💳 Driver Financial Wallet</h3>
+                        <span class="badge badge-completed">80% Commission Payout</span>
+                    </div>
+
+                    <div class="stat-card">
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Liquid Available Balance</div>
+                            <div class="stat-val" id="driver-balance-val">Rs. 0.00</div>
+                        </div>
+                        <span class="badge badge-accepted" id="driver-currency">INR</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Withdraw to Bank Account (Atomic @Transactional Debit)</label>
+                        <div class="quick-chips">
+                            <button type="button" class="chip-btn" onclick="setWithdrawAmount(100)">+ Rs. 100</button>
+                            <button type="button" class="chip-btn" onclick="setWithdrawAmount(500)">+ Rs. 500</button>
+                            <button type="button" class="chip-btn" onclick="setWithdrawAmount(1000)">+ Rs. 1000</button>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="number" id="driver-withdraw-amount" min="1" step="50" placeholder="Amount (Rs.)">
+                            <button class="btn btn-warning btn-sm" style="width: 130px;" onclick="withdrawFunds()">Withdraw</button>
+                        </div>
+                    </div>
+
+                    <div class="card-header" style="margin-top: 20px;">
+                        <h3 style="font-size: 14px;">Audit Ledger (Paginated)</h3>
+                        <select id="driver-txn-filter" onchange="resetAndFetchTxns()" style="width: auto; padding: 4px 8px; font-size: 12px;">
+                            <option value="">ALL</option>
+                            <option value="CREDIT">CREDIT</option>
+                            <option value="DEBIT">DEBIT</option>
+                        </select>
+                    </div>
+                    <div id="driver-txns-feed" style="max-height: 240px; overflow-y: auto;">
+                        <!-- Ledger items loaded via API -->
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 12px; color: var(--text-muted);">
+                        <button class="btn btn-secondary btn-sm" id="btn-txn-prev" onclick="changeTxnPage(-1)">← Prev</button>
+                        <span id="driver-txn-page-info">Page 1 of 1</span>
+                        <button class="btn btn-secondary btn-sm" id="btn-txn-next" onclick="changeTxnPage(1)">Next →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div id="toast"></div>
+
+    <script>
+        let driverToken = localStorage.getItem('ridevault_driver_token') || '';
+        if (!driverToken || driverToken === 'undefined' || driverToken === 'null' || driverToken === 'Bearer undefined') {
+            driverToken = '';
+            localStorage.removeItem('ridevault_driver_token');
+        }
+
+        let pollTimer = null;
+        let currentDriverRideId = null;
+        let lastRenderedRideKey = '';
+        let driverAvailable = true;
+        let txnPage = 0;
+        let txnTotalPages = 1;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (driverToken) {
+                showDriverDashboard();
+            }
+        });
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.style.borderColor = isError ? 'var(--danger)' : 'var(--success)';
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 4000);
+        }
+
+        function extractApiError(body, fallback) {
+            if (body && body.fieldErrors) {
+                const firstErr = Object.values(body.fieldErrors)[0];
+                if (firstErr) return firstErr;
+            }
+            return (body && body.message) ? body.message : fallback;
+        }
+
+        function setWithdrawAmount(amt) {
+            document.getElementById('driver-withdraw-amount').value = amt;
+        }
+
+        // ==============================================================
+        //  PASSWORD AUTHENTICATION LOGIC (BCrypt + Stateless JWT)
+        // ==============================================================
+        function switchDriverAuthTab(tab) {
+            const isLogin = tab === 'login';
+            document.getElementById('tab-driver-login').classList.toggle('active', isLogin);
+            document.getElementById('tab-driver-register').classList.toggle('active', !isLogin);
+            document.getElementById('form-driver-login').style.display = isLogin ? 'block' : 'none';
+            document.getElementById('form-driver-register').style.display = isLogin ? 'none' : 'block';
+        }
+
+        async function handleDriverLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('driver-login-email').value.trim();
+            const password = document.getElementById('driver-login-password').value;
+            const btn = document.getElementById('btn-driver-login');
+            btn.disabled = true;
+            btn.innerText = 'Signing in...';
+
+            try {
+                const res = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(err) {}
+
+                if (!res.ok) {
+                    showToast(extractApiError(body, 'Invalid email or password'), true);
+                    return;
+                }
+
+                if (body.data.role !== 'ROLE_DRIVER') {
+                    showToast('This account is registered as a Rider. Please use the Rider Portal.', true);
+                    return;
+                }
+
+                driverToken = body.data.accessToken;
+                localStorage.setItem('ridevault_driver_token', driverToken);
+                showToast(`Welcome back, Driver ${body.data.fullName}!`);
+                showDriverDashboard(body.data);
+            } catch (err) {
+                showToast('Login failed: ' + err.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Sign In & Enter Cockpit';
+            }
+        }
+
+        async function handleDriverRegister(e) {
+            e.preventDefault();
+            const payload = {
+                firstName: document.getElementById('driver-reg-fname').value.trim(),
+                lastName: document.getElementById('driver-reg-lname').value.trim(),
+                email: document.getElementById('driver-reg-email').value.trim(),
+                phoneNo: document.getElementById('driver-reg-phone').value.trim(),
+                password: document.getElementById('driver-reg-password').value,
+                licenseNo: document.getElementById('driver-reg-license').value.trim(),
+                vehicleCategory: document.getElementById('driver-reg-cat').value,
+                vehicleModel: document.getElementById('driver-reg-model').value.trim(),
+                vehicleYear: parseInt(document.getElementById('driver-reg-year').value),
+                plateNo: document.getElementById('driver-reg-plate').value.trim(),
+                insurancePolicyNo: document.getElementById('driver-reg-insurance').value.trim(),
+                insuranceExpiryDate: document.getElementById('driver-reg-insexp').value
+            };
+            const btn = document.getElementById('btn-driver-register');
+            btn.disabled = true;
+            btn.innerText = 'Registering Fleet...';
+
+            try {
+                const res = await fetch('/api/v1/auth/register/driver', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(err) {}
+
+                if (!res.ok) {
+                    showToast(extractApiError(body, 'Driver registration failed'), true);
+                    return;
+                }
+
+                driverToken = body.data.accessToken;
+                localStorage.setItem('ridevault_driver_token', driverToken);
+                showToast('Driver account, vehicle & wallet initialized successfully!');
+                showDriverDashboard(body.data);
+            } catch (err) {
+                showToast('Registration failed: ' + err.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Register Driver & Initialize Wallet';
+            }
+        }
+
+        // ==============================================================
+        //  DRIVER DASHBOARD LOGIC
+        // ==============================================================
+        async function refreshDriverProfile() {
+            try {
+                const res = await fetch('/api/v1/driver/me', {
+                    headers: { 'Authorization': `Bearer ${driverToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+
+                if (res.ok && body.data) {
+                    const d = body.data;
+                    driverAvailable = !!d.isAvailable;
+                    renderAvailabilityButton();
+                    document.getElementById('driver-name').innerText = d.fullName;
+                    const vInfo = d.vehicle ? `${d.vehicle.category} (${d.vehicle.model} - ${d.vehicle.plateNo})` : 'Vehicle Registered';
+                    document.getElementById('driver-meta').innerText = `License: ${d.licenseNo} | ${vInfo} | Rating: ${d.rating} ★ (${d.totalRides} rides)`;
+                    document.getElementById('driver-avatar').innerText = (d.fullName || 'D').charAt(0).toUpperCase();
+                    return true;
+                } else if (res.status === 401 || res.status === 403) {
+                    logoutDriver();
+                    return false;
+                }
+            } catch (e) {}
+            return true;
+        }
+
+        function renderAvailabilityButton() {
+            const btn = document.getElementById('btn-driver-availability');
+            if (!btn) return;
+            if (driverAvailable) {
+                btn.innerText = '● ONLINE';
+                btn.style.background = 'var(--success)';
+                btn.style.color = '#fff';
+            } else {
+                btn.innerText = '○ OFFLINE';
+                btn.style.background = '#334155';
+                btn.style.color = '#cbd5e1';
+            }
+        }
+
+        async function toggleDriverAvailability() {
+            const nextState = !driverAvailable;
+            try {
+                const res = await fetch(`/api/v1/driver/availability?available=${nextState}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${driverToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+                if (res.ok && body.data) {
+                    driverAvailable = !!body.data.isAvailable;
+                    renderAvailabilityButton();
+                    showToast(body.message || (driverAvailable ? 'You are now ONLINE' : 'You are now OFFLINE'));
+                    fetchAvailableRides(true);
+                } else {
+                    showToast(body.message || 'Could not update availability', true);
+                }
+            } catch (e) {
+                showToast('Error updating availability', true);
+            }
+        }
+
+        async function showDriverDashboard(cachedUser) {
+            document.getElementById('driver-auth-view').style.display = 'none';
+            document.getElementById('driver-dash-view').style.display = 'block';
+
+            if (cachedUser) {
+                document.getElementById('driver-name').innerText = cachedUser.fullName;
+                document.getElementById('driver-meta').innerText = `${cachedUser.phoneNo} | Driver Verified`;
+                document.getElementById('driver-avatar').innerText = (cachedUser.fullName || 'D').charAt(0).toUpperCase();
+            }
+
+            const ok = await refreshDriverProfile();
+            if (!ok) return;
+
+            fetchWalletDetails();
+            restoreActiveTrip();
+            fetchAvailableRides();
+
+            if (pollTimer) clearInterval(pollTimer);
+            pollTimer = setInterval(() => {
+                restoreActiveTrip();
+                if (!currentDriverRideId) {
+                    fetchAvailableRides(true);
+                }
+            }, 4000);
+        }
+
+        function logoutDriver() {
+            driverToken = '';
+            currentDriverRideId = null;
+            lastRenderedRideKey = '';
+            if (pollTimer) clearInterval(pollTimer);
+            localStorage.removeItem('ridevault_driver_token');
+            document.getElementById('driver-dash-view').style.display = 'none';
+            document.getElementById('driver-auth-view').style.display = 'block';
+            showToast('Driver logged out.');
+        }
+
+        function resetAndFetchTxns() {
+            txnPage = 0;
+            fetchWalletTransactionsPaged();
+        }
+
+        function changeTxnPage(delta) {
+            const next = txnPage + delta;
+            if (next >= 0 && next < txnTotalPages) {
+                txnPage = next;
+                fetchWalletTransactionsPaged();
+            }
+        }
+
+        async function fetchWalletDetails() {
+            try {
+                const res = await fetch('/api/v1/wallet/me', {
+                    headers: { 'Authorization': `Bearer ${driverToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+
+                if (res.ok && body.data) {
+                    const w = body.data;
+                    document.getElementById('driver-balance-val').innerText = `Rs. ${w.balance.toFixed(2)}`;
+                    document.getElementById('driver-currency').innerText = w.currency;
+                    fetchWalletTransactionsPaged();
+                } else if (res.status === 401 || res.status === 403) {
+                    logoutDriver();
+                }
+            } catch (e) {}
+        }
+
+        async function fetchWalletTransactionsPaged() {
+            const movementType = document.getElementById('driver-txn-filter')?.value || '';
+            const typeParam = movementType ? `&movementType=${encodeURIComponent(movementType)}` : '';
+            try {
+                const res = await fetch(`/api/v1/wallet/transactions?page=${txnPage}&size=5${typeParam}`, {
+                    headers: { 'Authorization': `Bearer ${driverToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+
+                if (res.ok && body.data) {
+                    const pageData = body.data;
+                    const items = pageData.content || [];
+                    txnTotalPages = Math.max(pageData.totalPages || 1, 1);
+
+                    document.getElementById('driver-txn-page-info').innerText = `Page ${pageData.page + 1} of ${txnTotalPages} (${pageData.totalElements} txns)`;
+                    document.getElementById('btn-txn-prev').disabled = pageData.first;
+                    document.getElementById('btn-txn-next').disabled = pageData.last;
+
+                    const feed = document.getElementById('driver-txns-feed');
+                    if (items.length > 0) {
+                        feed.innerHTML = items.map(t => `
+                            <div class="feed-item" style="font-size:12px;">
+                                <div style="display:flex; justify-content:space-between;">
+                                    <strong>${t.purpose}</strong>
+                                    <span class="badge badge-${t.movementType === 'CREDIT' ? 'completed' : 'cancelled'}">${t.movementType} Rs. ${t.amount.toFixed(2)}</span>
+                                </div>
+                                <div style="color:var(--text-muted); margin-top:3px;">Balance After: Rs. ${t.balanceAfter.toFixed(2)}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        feed.innerHTML = '<div style="color:var(--text-muted); font-size:13px; text-align: center; padding: 15px;">No transactions recorded for this filter.</div>';
+                    }
+                }
+            } catch (e) {}
+        }
+
+        async function withdrawFunds() {
+            const amount = parseFloat(document.getElementById('driver-withdraw-amount').value);
+            if (!amount || amount <= 0) {
+                showToast('Enter valid withdrawal amount', true);
+                return;
+            }
+
+            logDriver(`Executing @Transactional withdrawal of Rs. ${amount}...`);
+
+            try {
+                const res = await fetch('/api/v1/wallet/withdraw', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${driverToken}`
+                    },
+                    body: JSON.stringify({ amount })
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) { body = { message: text }; }
+
+                if (!res.ok) {
+                    showToast(body.message || 'Withdrawal failed', true);
+                    logDriver(`[ERROR] ${body.message}`, 'error');
+                    return;
+                }
+
+                showToast(`Withdrawn Rs. ${amount.toFixed(2)} successfully!`);
+                logDriver(`[SUCCESS] Txn #${body.data.txnId} debited. Balance: Rs. ${body.data.balanceAfter.toFixed(2)}`, 'success');
+                document.getElementById('driver-withdraw-amount').value = '';
+                fetchWalletDetails();
+            } catch (err) {
+                showToast('Withdrawal failed: ' + err.message, true);
+            }
+        }
+
+        async function fetchAvailableRides(silent = false) {
+            if (!silent) {
+                logDriver('Scanning pending rides matching vehicle category (GET /api/v1/rides/available)...');
+            }
+
+            try {
+                const res = await fetch('/api/v1/rides/available', {
+                    headers: { 'Authorization': `Bearer ${driverToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+
+                const feed = document.getElementById('driver-available-feed');
+                if (res.ok && body.data) {
+                    if (body.data.length === 0) {
+                        feed.innerHTML = '<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:15px;">No pending rides currently available for your category.</div>';
+                        return;
+                    }
+
+                    feed.innerHTML = body.data.map(r => `
+                        <div class="feed-item">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <strong>Ride #${r.rideId} — ${r.vehicleCategory}</strong>
+                                <span class="badge badge-pending">PENDING</span>
+                            </div>
+                            <div style="font-size:13px; color:var(--text-muted);">${r.pickupAddress} → ${r.dropoffAddress} (${r.distanceKm} km)</div>
+                            <div style="font-size:13px; color:#fff; margin:6px 0;">Fare: Rs. ${r.estimatedFare} (Your 80% Cut: <strong style="color:var(--success);">Rs. ${(r.estimatedFare * 0.8).toFixed(2)}</strong>)</div>
+                            <button class="btn btn-sm" onclick="claimRideOptimistically(${r.rideId})">Claim Ride (Raw SQL Optimistic Lock)</button>
+                        </div>
+                    `).join('');
+                } else if (res.status === 401 || res.status === 403) {
+                    logoutDriver();
+                }
+            } catch (e) {
+                logDriver('Error scanning rides: ' + e.message, 'error');
+            }
+        }
+
+        async function claimRideOptimistically(rideId) {
+            logDriver(`Executing atomic update: UPDATE rides SET status='ACCEPTED' WHERE ride_id=${rideId} AND status='PENDING'...`);
+
+            try {
+                const res = await fetch(`/api/v1/rides/${rideId}/accept`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${driverToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) { body = { message: text }; }
+
+                if (!res.ok) {
+                    if (res.status === 409) {
+                        showToast('Conflict: Another driver claimed this ride first! (Optimistic lock hit)', true);
+                        logDriver(`[CONFLICT 409] Double-booking eradicated! Rows affected = 0.`, 'error');
+                    } else if (res.status === 401 || res.status === 403) {
+                        showToast('Driver session expired. Please re-login.', true);
+                        logoutDriver();
+                        return;
+                    } else {
+                        showToast(body.message || 'Failed to claim ride', true);
+                        logDriver(`[ERROR] ${body.message}`, 'error');
+                    }
+                    fetchAvailableRides();
+                    return;
+                }
+
+                showToast(`Ride #${rideId} claimed successfully!`);
+                logDriver(`[SUCCESS] Ride #${rideId} claimed. Rows affected = 1. State machine -> ACCEPTED`, 'success');
+                currentDriverRideId = body.data.rideId;
+                renderDriverActiveTrip(body.data);
+                fetchAvailableRides(true);
+            } catch (err) {
+                showToast('Accept failed: ' + err.message, true);
+            }
+        }
+
+        // Restore active trip on load / refresh
+        async function restoreActiveTrip() {
+            if (!driverToken) return;
+            try {
+                const res = await fetch('/api/v1/driver/active-ride', {
+                    headers: { 'Authorization': `Bearer ${driverToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+
+                if (res.ok && body.data) {
+                    currentDriverRideId = body.data.rideId;
+                    renderDriverActiveTrip(body.data);
+                } else if (res.ok && body.data === null) {
+                    if (currentDriverRideId !== null) {
+                        currentDriverRideId = null;
+                        lastRenderedRideKey = '';
+                        const feed = document.getElementById('driver-active-trip-feed');
+                        feed.innerHTML = '<div style="color:var(--text-muted); font-size:13px; text-align:center; padding:15px;">No active trip in progress. Ready for next ride.</div>';
+                        refreshDriverProfile();
+                        fetchWalletDetails();
+                        fetchAvailableRides(true);
+                    }
+                }
+            } catch (e) {}
+        }
+
+        function renderDriverActiveTrip(ride) {
+            const renderKey = `${ride.rideId}:${ride.status}`;
+            if (lastRenderedRideKey === renderKey) return;
+            lastRenderedRideKey = renderKey;
+
+            const feed = document.getElementById('driver-active-trip-feed');
+            feed.innerHTML = `
+                <div class="feed-item" style="border-left: 4px solid var(--success);">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <strong>Ride #${ride.rideId} (Passenger: ${ride.riderName})</strong>
+                        <span class="badge badge-${ride.status.toLowerCase()}">${ride.status}</span>
+                    </div>
+                    <div style="font-size:13px; color:var(--text-muted);">${ride.pickupAddress} → ${ride.dropoffAddress}</div>
+                    <div style="font-size:13px; color:#fff; margin: 6px 0;">Calculated Fare: Rs. ${ride.estimatedFare}</div>
+                    <div style="display:flex; gap:8px; margin-top:10px; align-items:center; flex-wrap:wrap;">
+                        ${ride.status === 'ACCEPTED' ? `
+                            <button class="btn btn-sm btn-secondary" onclick="progressTripStatus(${ride.rideId}, 'ARRIVED')">Mark Arrived at Pickup</button>
+                        ` : ''}
+                        ${ride.status === 'ARRIVED' ? `
+                            <input type="text" id="driver-start-pin" maxlength="4" pattern="[0-9]{4}" placeholder="4-digit Start PIN" style="width:140px; padding:6px 10px; font-size:13px; font-family:'JetBrains Mono',monospace;">
+                            <button class="btn btn-sm btn-success" onclick="progressTripStatus(${ride.rideId}, 'IN_PROGRESS')">Verify PIN & Start Trip</button>
+                        ` : ''}
+                        ${ride.status === 'IN_PROGRESS' ? `
+                            <button class="btn btn-sm btn-success" onclick="completeTripAndSettle(${ride.rideId}, ${ride.estimatedFare})">Complete & Settle 80% Payout</button>
+                        ` : ''}
+                        <button class="btn btn-sm btn-secondary" onclick="toggleDriverRideTimeline(${ride.rideId})">Timeline</button>
+                    </div>
+                    <div id="driver-trip-tl-${ride.rideId}" style="display:none; margin-top:10px; padding-top:8px; border-top:1px dashed var(--surface-border); font-size:11px; color:var(--text-muted);"></div>
+                </div>
+            `;
+        }
+
+        async function toggleDriverRideTimeline(rideId) {
+            const el = document.getElementById(`driver-trip-tl-${rideId}`);
+            if (!el) return;
+            if (el.style.display === 'block') {
+                el.style.display = 'none';
+                return;
+            }
+            try {
+                const res = await fetch(`/api/v1/rides/${rideId}/timeline`, {
+                    headers: { 'Authorization': `Bearer ${driverToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+                if (res.ok && body.data) {
+                    el.innerHTML = body.data.map(l => `
+                        <div style="margin-bottom:4px;">
+                            <strong style="color:var(--success);">${l.fromStatus} → ${l.toStatus}</strong>
+                            by ${l.changedBy} • <span style="color:var(--text-dim);">${new Date(l.changedAt).toLocaleTimeString()}</span>
+                        </div>
+                    `).join('') || 'No audit entries.';
+                    el.style.display = 'block';
+                }
+            } catch (e) {}
+        }
+
+        async function progressTripStatus(rideId, targetStatus) {
+            let startPinParam = '';
+            if (targetStatus === 'IN_PROGRESS') {
+                const pin = document.getElementById('driver-start-pin')?.value.trim() || '';
+                if (!/^[0-9]{4}$/.test(pin)) {
+                    showToast('Enter the 4-digit boarding Start PIN shown on the Rider Portal!', true);
+                    return;
+                }
+                startPinParam = `&startPin=${encodeURIComponent(pin)}`;
+            }
+
+            logDriver(`State Machine Transition: Ride #${rideId} -> ${targetStatus}...`);
+
+            try {
+                const res = await fetch(`/api/v1/rides/${rideId}/status?targetStatus=${targetStatus}&reason=DriverUpdate${startPinParam}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${driverToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+
+                if (res.ok) {
+                    showToast(`Ride #${rideId} transitioned to ${targetStatus}!`);
+                    logDriver(`[SUCCESS] Ride status updated to ${targetStatus}`, 'success');
+                    renderDriverActiveTrip(body.data);
+                } else {
+                    showToast(body.message || `Failed to transition ride to ${targetStatus}`, true);
+                    logDriver(`[ERROR] ${body.message}`, 'error');
+                }
+            } catch (e) {
+                showToast('Status update failed: ' + e.message, true);
+            }
+        }
+
+        async function completeTripAndSettle(rideId, fare) {
+            logDriver(`Triggering @Transactional ACID settlement for Ride #${rideId} (Collected: Rs. ${fare})...`);
+
+            try {
+                const res = await fetch(`/api/v1/rides/${rideId}/complete?collectedFare=${fare}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${driverToken}` }
+                });
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+
+                if (!res.ok) {
+                    showToast(body.message || 'Settlement failed', true);
+                    logDriver(`[ERROR] ${body.message}`, 'error');
+                    return;
+                }
+
+                showToast(`Ride #${rideId} completed! 80% payout credited.`);
+                logDriver(`[ACID SUCCESS] Driver earning credited: Rs. ${body.data.driverEarning}. Platform cut: Rs. ${body.data.platformCommission}.`, 'success');
+                currentDriverRideId = null;
+                lastRenderedRideKey = '';
+                document.getElementById('driver-active-trip-feed').innerHTML = '<div style="color:var(--success); font-size:13px; padding: 10px 0;">✓ Trip completed and settled. Funds credited to wallet.</div>';
+                refreshDriverProfile();
+                fetchWalletDetails();
+                fetchAvailableRides(true);
+            } catch (err) {
+                showToast('Settlement failed: ' + err.message, true);
+            }
+        }
+
+        function logDriver(msg, type = 'info') {
+            const t = document.getElementById('driver-terminal');
+            const colorClass = type === 'success' ? 'log-success' : type === 'error' ? 'log-error' : '';
+            t.innerHTML += `<br><span class="log-time">[${new Date().toLocaleTimeString()}]</span> <span class="${colorClass}">${msg}</span>`;
+            t.scrollTop = t.scrollHeight;
+        }
+    </script>
+</body>
+</html>

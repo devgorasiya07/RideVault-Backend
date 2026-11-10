@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RideVault — Enterprise System Hub & Testing Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #090e17;
+            --surface: #101726;
+            --surface-card: #162034;
+            --surface-border: #1f2e47;
+            --surface-hover: #22334f;
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.25);
+            --primary-hover: #0ea5e9;
+            --accent: #818cf8;
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.14);
+            --warning: #f59e0b;
+            --warning-bg: rgba(245, 158, 11, 0.14);
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.14);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg); color: var(--text); min-height: 100vh; padding: 24px; }
+        .container { max-width: 1280px; margin: 0 auto; }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--surface-border);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .brand-container { display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; }
+        .logo-box {
+            width: 46px;
+            height: 46px;
+            background: linear-gradient(135deg, #0284c7, #6366f1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+        .brand-title { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+        .brand-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        .header-badges { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .tech-pill {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--surface-border);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .swagger-btn {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        .swagger-btn:hover { background: var(--primary-glow); }
+
+        /* HERO SECTION */
+        .hero {
+            background: linear-gradient(135deg, rgba(16, 24, 38, 0.9), rgba(22, 32, 52, 0.9));
+            border: 1px solid var(--surface-border);
+            border-radius: 18px;
+            padding: 36px 32px;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.12), transparent 70%);
+            pointer-events: none;
+        }
+        .hero h1 { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 10px; letter-spacing: -0.5px; }
+        .hero p { font-size: 15px; color: var(--text-muted); max-width: 800px; line-height: 1.6; }
+
+        /* PORTAL GATEWAY CARDS */
+        .portal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+            margin-bottom: 36px;
+        }
+        .portal-card {
+            background: var(--surface-card);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+        .portal-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+        }
+        .portal-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 18px;
+        }
+        .portal-icon.rider { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .portal-icon.driver { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+        .portal-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .portal-desc { font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; }
+        .portal-features { list-style: none; margin-bottom: 24px; }
+        .portal-features li {
+            font-size: 13px;
+            color: #cbd5e1;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .portal-features li span { color: var(--success); font-weight: 700; }
+
+        .portal-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 13px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .portal-btn.rider { background: var(--primary); color: #000; }
+        .portal-btn.rider:hover { background: var(--primary-hover); }
+        .portal-btn.driver { background: var(--success); color: #fff; }
+        .portal-btn.driver:hover { background: #059669; }
+
+        /* LABS SECTION */
+        .section-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px; margin-bottom: 24px; }
+        .card {
+            background: var(--surface-card);
+            border: 1px solid var(--surface-border);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .card-header h3 { font-size: 16px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px; }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-warning { background: var(--warning); color: #000; }
+        .btn-warning:hover { background: #d97706; }
+        .btn-secondary { background: #1e293b; color: #fff; border: 1px solid #334155; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; width: auto; }
+
+        .terminal {
+            background: #050811;
+            border: 1px solid #1e293b;
+            border-radius: 10px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: #38bdf8;
+            max-height: 340px;
+            overflow-y: auto;
+            line-height: 1.6;
+            margin-top: 14px;
+        }
+        .log-time { color: var(--text-dim); }
+        .log-success { color: var(--success); }
+        .log-warn { color: var(--warning); }
+        .log-error { color: var(--danger); }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .badge-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+        .badge-completed { background: var(--success-bg); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <a href="/index.html" class="brand-container">
+                <div class="logo-box">⚡</div>
+                <div>
+                    <div class="brand-title">RideVault 2.0</div>
+                    <div class="brand-sub">Enterprise System Architecture Hub & Gateway</div>
+                </div>
+            </a>
+
+            <div class="header-badges">
+                <span class="tech-pill">Spring Boot 4.1 · Spring 7</span>
+                <span class="tech-pill">Stateless JWT</span>
+                <span class="tech-pill">14-Table BCNF</span>
+                <span class="tech-pill">Optimistic Locking</span>
+                <span class="tech-pill">@Transactional Ledger</span>
+                <a href="/swagger-ui.html" target="_blank" class="swagger-btn">OpenAPI Swagger UI ↗</a>
+            </div>
+        </header>
+
+        <!-- HERO -->
+        <div class="hero">
+            <h1>Dynamic Ride Booking & Wallet Settlement Platform</h1>
+            <ul style="list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 14px; max-width: 880px; font-size: 14px; color: var(--text-muted); line-height: 1.55;">
+                <li><span style="color: var(--primary); font-weight: 700; margin-right: 8px;">•</span><strong style="color: #fff;">Verified Dispatch & Lifecycle:</strong> BCrypt + stateless JWT with refresh token rotation, 4-digit Start PIN boarding check, state-machine audit logs, and 3-minute <code>@Scheduled</code> auto-expiry.</li>
+                <li><span style="color: var(--success); font-weight: 700; margin-right: 8px;">•</span><strong style="color: #fff;">Concurrency-Safe Claiming & Pricing:</strong> Raw SQL optimistic locking (<code>WHERE status='PENDING'</code>) prevents double-booking alongside Haversine distance & geographic surge pricing.</li>
+                <li><span style="color: var(--warning); font-weight: 700; margin-right: 8px;">•</span><strong style="color: #fff;">Atomic Wallet Settlements:</strong> <code>@Transactional</code> payouts with <code>PESSIMISTIC_WRITE</code> row locks and a double-entry ledger guarantee consistent 80/20 splits across a 14-table BCNF PostgreSQL schema.</li>
+            </ul>
+        </div>
+
+        <!-- PORTAL GATEWAYS -->
+        <div class="portal-grid">
+            <!-- RIDER PORTAL CARD -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-icon rider">👤</div>
+                    <div class="portal-title">
+                        <span>Passenger / Rider Portal</span>
+                        <span class="tech-pill">/rider</span>
+                    </div>
+                    <p class="portal-desc">
+                        Dedicated passenger ride-hailing experience featuring live Haversine pricing, 4-digit Start PIN boarding security, post-ride driver ratings, and paginated trip history.
+                    </p>
+                    <ul class="portal-features">
+                        <li><span>✓</span> Haversine distance & geographic SurgeZone pricing</li>
+                        <li><span>✓</span> 4-digit Start PIN verification & emergency SOS contact</li>
+                        <li><span>✓</span> 5-stage live trip tracker & audit timeline viewer</li>
+                        <li><span>✓</span> Post-ride 5★ ratings & paginated/filtered history</li>
+                    </ul>
+                </div>
+                <a href="/rider.html" class="portal-btn rider">Launch Dedicated Rider Portal ➔</a>
+            </div>
+
+            <!-- DRIVER PORTAL CARD -->
+            <div class="portal-card">
+                <div>
+                    <div class="portal-icon driver">🚘</div>
+                    <div class="portal-title">
+                        <span>Driver Fleet Portal</span>
+                        <span class="tech-pill">/driver</span>
+                    </div>
+                    <p class="portal-desc">
+                        Dedicated fleet driver cockpit with Online/Offline availability, atomic ride claiming, Start PIN verification, and instant 80% payouts into a paginated double-entry wallet ledger.
+                    </p>
+                    <ul class="portal-features">
+                        <li><span>✓</span> Online/Offline toggle & real-time incoming ride radar</li>
+                        <li><span>✓</span> Raw SQL optimistic locking (WHERE status='PENDING')</li>
+                        <li><span>✓</span> PIN-verified trip start & state machine lifecycle</li>
+                        <li><span>✓</span> Instant 80% wallet settlement & paginated ledger</li>
+                    </ul>
+                </div>
+                <a href="/driver.html" class="portal-btn driver">Launch Dedicated Driver Portal ➔</a>
+            </div>
+        </div>
+
+        <!-- LIVE OPERATIONS TELEMETRY (REAL POSTGRESQL DATA) -->
+        <div class="section-title" style="justify-content: space-between;">
+            <span>📊 Live Platform Operations & Surge Zones (PostgreSQL)</span>
+            <button class="btn btn-secondary btn-sm" onclick="loadHubOverview()">↻ Refresh Live DB Stats</button>
+        </div>
+
+        <div id="hub-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div class="card" style="padding: 18px;">
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Online Drivers</div>
+                <div id="stat-online-drivers" style="font-size: 28px; font-weight: 800; color: var(--success); margin-top: 4px; font-family: 'JetBrains Mono', monospace;">--</div>
+                <div id="stat-total-drivers" style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">of -- registered</div>
+            </div>
+            <div class="card" style="padding: 18px;">
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Registered Riders</div>
+                <div id="stat-total-riders" style="font-size: 28px; font-weight: 800; color: var(--primary); margin-top: 4px; font-family: 'JetBrains Mono', monospace;">--</div>
+                <div style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">BCrypt & JWT verified</div>
+            </div>
+            <div class="card" style="padding: 18px;">
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Pending / Ongoing</div>
+                <div id="stat-active-rides" style="font-size: 28px; font-weight: 800; color: var(--warning); margin-top: 4px; font-family: 'JetBrains Mono', monospace;">--</div>
+                <div id="stat-ride-breakdown" style="font-size: 11px; color: var(--text-dim); margin-top: 2px;">-- pending • -- in progress</div>
+            </div>
+            <div class="card" style="padding: 18px;">
+                <div style="font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Completed Trips</div>
+                <div id="stat-completed-rides" style="font-size: 28px; font-weight: 800; color: #fff; margin-top: 4px; font-family: 'JetBrains Mono', monospace;">--</div>
+                <div id="stat-commission" style="font-size: 11px; color: var(--success); margin-top: 2px;">Platform Cut: Rs. 0.00</div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>🗺️ Gandhinagar Geographic Surge Zones</h3>
+                    <span class="badge badge-completed">surge_zones Table</span>
+                </div>
+                <div id="hub-surge-list" style="max-height: 280px; overflow-y: auto;">
+                    <div style="color: var(--text-muted); font-size: 13px;">Loading live zone multipliers...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>🛡️ Core Backend Engineering Guarantees</h3>
+                    <span class="badge badge-warning">Verified Architecture</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                    <div style="background: #0a101a; padding: 12px; border-radius: 8px; border-left: 3px solid var(--primary);">
+                        <strong style="color: #fff;">Raw SQL Optimistic Concurrency</strong><br>
+                        Atomic <code>UPDATE rides SET ... WHERE ride_id = ? AND status = 'PENDING'</code> guarantees at most 1 winning driver per request.
+                    </div>
+                    <div style="background: #0a101a; padding: 12px; border-radius: 8px; border-left: 3px solid var(--success);">
+                        <strong style="color: #fff;">Atomic Wallet Settlement (@Transactional + PESSIMISTIC_WRITE)</strong><br>
+                        80% driver credit + double-entry <code>wallet_transactions</code> ledger roll back 100% together on any failure.
+                    </div>
+                    <div style="background: #0a101a; padding: 12px; border-radius: 8px; border-left: 3px solid var(--warning);">
+                        <strong style="color: #fff;">Stateless JWT + SHA-256 Refresh Token Rotation</strong><br>
+                        Participant ownership checks, 4-digit boarding Start PIN, and REST pagination across history & ledger APIs.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            loadHubOverview();
+            setInterval(loadHubOverview, 8000);
+        });
+
+        async function loadHubOverview() {
+            try {
+                const res = await fetch('/api/v1/hub/overview');
+                const text = await res.text();
+                let body = {};
+                try { body = text ? JSON.parse(text) : {}; } catch(e) {}
+
+                if (!res.ok || !body.data) return;
+                const d = body.data;
+
+                document.getElementById('stat-online-drivers').innerText = d.onlineDrivers ?? 0;
+                document.getElementById('stat-total-drivers').innerText = `of ${d.totalDrivers ?? 0} registered`;
+                document.getElementById('stat-total-riders').innerText = d.totalRiders ?? 0;
+                document.getElementById('stat-active-rides').innerText = (d.pendingRides ?? 0) + (d.ongoingRides ?? 0);
+                document.getElementById('stat-ride-breakdown').innerText = `${d.pendingRides ?? 0} pending • ${d.ongoingRides ?? 0} ongoing`;
+                document.getElementById('stat-completed-rides').innerText = d.completedRides ?? 0;
+                document.getElementById('stat-commission').innerText = `Platform 20% Revenue: Rs. ${(d.totalPlatformCommission ?? 0).toFixed(2)}`;
+
+                const zoneEl = document.getElementById('hub-surge-list');
+                const zones = d.surgeZones || [];
+                if (zones.length === 0) {
+                    zoneEl.innerHTML = '<div style="color:var(--text-muted); font-size:13px;">No surge zones configured.</div>';
+                    return;
+                }
+                zoneEl.innerHTML = zones.map(z => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:#0a101a; border:1px solid var(--surface-border); border-radius:8px; margin-bottom:8px;">
+                        <div>
+                            <strong style="color:#fff; font-size:13px;">${z.zoneName}</strong>
+                            <div style="font-size:11px; color:var(--text-dim);">Radius: ${z.radiusKm} km</div>
+                        </div>
+                        <span class="badge ${z.surgeActive ? 'badge-warning' : 'badge-completed'}">${z.multiplier.toFixed(2)}x ${z.surgeActive ? 'SURGE' : 'NORMAL'}</span>
+                    </div>
+                `).join('');
+            } catch (e) {}
+        }
+    </script>
+</body>
+</html>

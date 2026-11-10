@@ -1,0 +1,81 @@
+# ==============================================================================
+#  RideVault — Spring Boot Application Configuration (GitHub-Safe)
+# ==============================================================================
+
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  config:
+    import: optional:classpath:application-local.yml
+
+  # --------------------------------------------------------------------------
+  #  PostgreSQL DataSource (HikariCP Connection Pool)
+  #  Override locally via application-local.yml or environment variables.
+  # --------------------------------------------------------------------------
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ridevault}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 20000
+      max-lifetime: 1800000
+
+  # --------------------------------------------------------------------------
+  #  JPA / Hibernate Configuration
+  # --------------------------------------------------------------------------
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+  # --------------------------------------------------------------------------
+  #  SQL Initialization (runs schema.sql on startup)
+  # --------------------------------------------------------------------------
+  sql:
+    init:
+      mode: always
+      platform: postgresql
+
+# ==============================================================================
+#  JWT & Scheduled Ride Expiry Configuration
+# ==============================================================================
+application:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET:cmlkZXZhdWx0LWRldi1qd3Qtc2VjcmV0LWtleS1jaGFuZ2UtaW4tcHJvZHVjdGlvbi0yMDI2}
+      access-token-expiration: 86400000    # 24 hours in milliseconds
+      refresh-token-expiration: 604800000  # 7 days in milliseconds
+  rides:
+    pending-expiry-minutes: 3              # Auto-cancel unaccepted PENDING rides after 3 minutes
+    expiry-check-interval-ms: 30000        # Run cleanup check every 30 seconds
+
+# ==============================================================================
+#  Swagger / OpenAPI Configuration
+# ==============================================================================
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+
+# ==============================================================================
+#  Logging
+# ==============================================================================
+logging:
+  level:
+    root: INFO
+    com.ridevault: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: WARN

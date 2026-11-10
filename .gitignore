@@ -1,0 +1,40 @@
+# ==============================================================================
+# RideVault — Git Ignore Rules
+# ==============================================================================
+
+# Maven & Java build outputs
+**/target/
+bin/
+build/
+out/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE & OS files
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+.DS_Store
+Thumbs.db
+
+# Local secrets & environment files (NEVER commit to GitHub)
+.env
+.env.*
+!.env.example
+**/application-local.yml
+**/application-local.properties
+
+# Logs & temporary files
+*.log
+logs/
+tmp/
+
+# IDE migration helper logs
+.github/modernize/
