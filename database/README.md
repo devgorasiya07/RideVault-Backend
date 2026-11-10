@@ -10,7 +10,7 @@ This folder contains the complete **PostgreSQL 16+** 14-table BCNF database arti
 | `ERD.jpg` | High-resolution Chen-notation Entity-Relationship Diagram (entities, diamonds, cardinalities & composite attributes) |
 | `RelationalDiagram.pdf` | Workbench-style Crow's-Foot Relational Schema Diagram detailing PK/FK keys, nullability, data types & indexes |
 
-> Note: Spring Boot also ships an auto-initialized copy at `ridevault-backend/src/main/resources/schema.sql`. Keeping this folder at the repository root allows immediate inspection, manual `psql` setup, or Docker initialization.
+> Note: Spring Boot also ships an auto-initialized copy at `ridevault-backend/src/main/resources/schema.sql`. Keeping this folder at the repository root allows immediate inspection and standalone `psql` setup.
 
 ---
 
@@ -71,10 +71,4 @@ psql -U postgres -d ridevault -f database/DataInsertion.sql
 
 # 3. (Optional) Run analytical queries
 psql -U postgres -d ridevault -f database/DQL.sql
-```
-
-Or launch PostgreSQL automatically with Docker Compose from the repository root:
-
-```bash
-docker compose up -d
 ```

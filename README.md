@@ -4,105 +4,174 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.2-brightgreen.svg)](https://spring.io/projects/spring-boot)
 [![Spring Framework](https://img.shields.io/badge/Spring%20Framework-7.0-brightgreen.svg)](https://spring.io/projects/spring-framework)
 [![Spring Security](https://img.shields.io/badge/Spring%20Security-7.1%20JWT-blue.svg)](https://spring.io/projects/spring-security)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%2B%20BCNF-336791.svg)](https://www.postgresql.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16%2B%2014--Table%20BCNF-336791.svg)](https://www.postgresql.org/)
+[![Swagger](https://img.shields.io/badge/SpringDoc-3.2%20Swagger-85EA2D.svg)](https://springdoc.org/)
 
-**RideVault** is a dynamic ride-hailing and driver wallet settlement backend built with **Java 21, Spring Boot 4, Spring Framework 7, Spring Security 7, Spring Data JPA (Hibernate 7), and PostgreSQL**. It models a production-style trip lifecycle—from rider fare estimation and concurrency-safe ride claiming to 4-digit boarding Start PIN verification and `@Transactional` 80/20 driver wallet settlements.
+**RideVault** is a production-style dynamic ride-hailing and driver wallet settlement backend built with **Java 21, Spring Boot 4, Spring Framework 7, Spring Security 7, Hibernate 7 (Spring Data JPA), and PostgreSQL**. It models an end-to-end trip lifecycle—combining GPS Haversine fare & surge pricing, concurrency-safe ride claiming without double-booking, 4-digit boarding Start PIN verification, a guarded 6-state machine with immutable audit logs, and `@Transactional` 80/20 driver wallet settlements.
+
+---
+
+## 🏗️ 3-Tier System Architecture
+
+```mermaid
+flowchart LR
+    Clients["Web Portals & REST Clients<br/>Operations Hub · Rider · Driver · Swagger UI"]
+    Security["Spring Security 7 Filter Chain<br/>JwtAuthenticationFilter · Stateless RBAC"]
+    Controllers["@RestController Layer<br/>@Valid DTOs · GlobalExceptionHandler"]
+    Services["@Service & Domain Layer<br/>Pricing · RideService · RideStateMachine<br/>WalletSettlement · @Scheduled Expiry"]
+    Persistence["Spring Data JPA & Locking<br/>Hibernate 7 · Raw SQL Optimistic Lock<br/>PESSIMISTIC_WRITE Row Locks"]
+    DB[("PostgreSQL 16+<br/>14-Table BCNF Schema")]
+
+    Clients --> Security --> Controllers --> Services --> Persistence --> DB
+```
 
 ---
 
 ## 🎯 Core Engineering Highlights
 
-| Pillar | What Was Built | Key Files |
+| Engineering Pillar | How It Works | Key Source Files |
 | :--- | :--- | :--- |
-| **Auth & RBAC Security** | BCrypt password hashing, stateless JWT access tokens (`jjwt`), SHA-256 refresh-token rotation with replay revocation, Jakarta `@Valid` DTO validation, and role isolation (`ROLE_RIDER`, `ROLE_DRIVER`, `ROLE_ADMIN`). | [`SecurityConfig.java`](./ridevault-backend/src/main/java/com/ridevault/config/SecurityConfig.java), [`JwtService.java`](./ridevault-backend/src/main/java/com/ridevault/config/JwtService.java), [`AuthService.java`](./ridevault-backend/src/main/java/com/ridevault/service/AuthService.java) |
-| **14-Table BCNF PostgreSQL** | Normalized schema separating `users`, `riders`, `drivers` (shared PK), `vehicles`, `vehicle_categories`, `vehicle_documents`, `fare_rules`, `surge_zones`, `rides`, `ride_status_logs`, `wallets`, `wallet_transactions`, `refresh_tokens`, and `ride_ratings`, with partial indexing (`idx_rides_pending`). | [`database/DDL.sql`](./database/DDL.sql), [`database/DQL.sql`](./database/DQL.sql) |
-| **Concurrency-Safe Claiming** | Prevents double-booking race conditions using raw SQL optimistic locking (`UPDATE rides ... WHERE ride_id = ? AND status = 'PENDING'`) verified across 10 concurrent threads. | [`RideRepository.java`](./ridevault-backend/src/main/java/com/ridevault/repository/RideRepository.java), [`RideConcurrencyTest.java`](./ridevault-backend/src/test/java/com/ridevault/concurrency/RideConcurrencyTest.java) |
-| **Ride Lifecycle & Dynamic Pricing** | 6-state machine (`PENDING → ACCEPTED → ARRIVED → IN_PROGRESS → COMPLETED / CANCELLED`), 4-digit boarding Start PIN check, `@Scheduled` 3-minute auto-expiry, Haversine spatial surge pricing, audit timelines, and 5★ rating aggregation. | [`RideStateMachine.java`](./ridevault-backend/src/main/java/com/ridevault/service/statemachine/RideStateMachine.java), [`RideService.java`](./ridevault-backend/src/main/java/com/ridevault/service/RideService.java), [`PricingService.java`](./ridevault-backend/src/main/java/com/ridevault/service/PricingService.java), [`RideExpiryScheduler.java`](./ridevault-backend/src/main/java/com/ridevault/service/RideExpiryScheduler.java) |
-| **ACID Wallet Settlements** | `@Transactional(rollbackFor = Exception.class)` 80/20 driver/platform payouts and withdrawals protected by `PESSIMISTIC_WRITE` locks and a double-entry `wallet_transactions` ledger, verified by runtime crash rollback tests. | [`WalletSettlementService.java`](./ridevault-backend/src/main/java/com/ridevault/service/WalletSettlementService.java), [`WalletSettlementRollbackTest.java`](./ridevault-backend/src/test/java/com/ridevault/settlement/WalletSettlementRollbackTest.java) |
+| **JWT Auth & Refresh Rotation** | BCrypt password hashing, stateless JWT access tokens (`jjwt 0.13.0`), SHA-256 refresh token rotation (`/refresh`, `/logout`) with replay revocation, Jakarta `@Valid` DTO validation, and RBAC (`ROLE_RIDER`, `ROLE_DRIVER`, `ROLE_ADMIN`) + participant ownership checks. | [`SecurityConfig.java`](./ridevault-backend/src/main/java/com/ridevault/config/SecurityConfig.java), [`JwtService.java`](./ridevault-backend/src/main/java/com/ridevault/config/JwtService.java), [`AuthService.java`](./ridevault-backend/src/main/java/com/ridevault/service/AuthService.java) |
+| **Concurrency-Safe Claiming** | Prevents double-booking race conditions when competing drivers accept the same trip using atomic conditional SQL (`UPDATE rides ... WHERE ride_id = ? AND status = 'PENDING'`) indexed by `idx_rides_pending`. Returns `409 Conflict` to losing drivers. | [`RideRepository.java`](./ridevault-backend/src/main/java/com/ridevault/repository/RideRepository.java), [`RideService.java`](./ridevault-backend/src/main/java/com/ridevault/service/RideService.java) |
+| **6-State FSM & Start PIN** | Strictly enforces `PENDING → ACCEPTED → ARRIVED → IN_PROGRESS → COMPLETED / CANCELLED` transitions, requires matching the rider's 4-digit `start_pin` before starting a trip, and persists immutable `ride_status_logs` rows on every change. | [`RideStateMachine.java`](./ridevault-backend/src/main/java/com/ridevault/service/statemachine/RideStateMachine.java) |
+| **ACID 80/20 Wallet Ledger** | Executes `@Transactional(rollbackFor = Exception.class)` 80% driver payout / 20% platform commission settlements and withdrawals protected by `PESSIMISTIC_WRITE` row locks (`SELECT ... FOR UPDATE`) and double-entry `wallet_transactions`. | [`WalletSettlementService.java`](./ridevault-backend/src/main/java/com/ridevault/service/WalletSettlementService.java), [`WalletRepository.java`](./ridevault-backend/src/main/java/com/ridevault/repository/WalletRepository.java) |
+| **Spatial Surge & Auto-Expiry** | Computes spherical Haversine distance (6371 km), real-time demand/supply surge + geographic `surge_zones` multipliers (capped at `3.5x`), and runs a `@Scheduled` job every 30s to auto-cancel stale `PENDING` rides older than 3 minutes. | [`PricingService.java`](./ridevault-backend/src/main/java/com/ridevault/service/PricingService.java), [`RideExpiryScheduler.java`](./ridevault-backend/src/main/java/com/ridevault/service/RideExpiryScheduler.java) |
+| **14-Table BCNF PostgreSQL** | Normalized relational schema with shared-PK `@MapsId` subtypes (`users` → `riders` / `drivers`), vehicle fleet & compliance (`vehicle_documents`), financial ledger, `refresh_tokens`, and 1–5★ `ride_ratings`. | [`database/DDL.sql`](./database/DDL.sql), [`database/DQL.sql`](./database/DQL.sql) |
 
 ---
 
-## 🗄️ Database Design & Entity-Relationship Diagram
+## 🔄 Ride Lifecycle State Machine
 
-The [`database/`](./database) directory ships complete, standalone SQL scripts and diagrams for PostgreSQL:
-- [`DDL.sql`](./database/DDL.sql) — 14 BCNF tables, foreign keys, check constraints, and partial/composite indexes
-- [`DataInsertion.sql`](./database/DataInsertion.sql) — Idempotent sample & seed dataset across all 14 tables with synchronized `SERIAL` sequences
-- [`DQL.sql`](./database/DQL.sql) — 15 analytical PostgreSQL queries (driver earnings leaderboard, double-entry ledger reconciliation, insurance expiry alerts, low-rating audits, transition latency)
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING : Rider books trip (4-digit Start PIN generated)
+    PENDING --> ACCEPTED : Driver claims atomically (WHERE status = 'PENDING')
+    PENDING --> CANCELLED : Rider cancels / @Scheduled 3-min expiry
+    ACCEPTED --> ARRIVED : Driver reaches pickup
+    ACCEPTED --> CANCELLED : Rider or Driver cancels
+    ARRIVED --> IN_PROGRESS : Driver verifies 4-digit Start PIN
+    ARRIVED --> CANCELLED : Rider or Driver cancels
+    IN_PROGRESS --> COMPLETED : Trip finishes & ACID 80/20 wallet settlement runs
+    COMPLETED --> [*]
+    CANCELLED --> [*]
+```
+
+Every transition validates against the directed transition graph in [`RideStateMachine.java`](./ridevault-backend/src/main/java/com/ridevault/service/statemachine/RideStateMachine.java) and writes an audit record into `ride_status_logs`.
+
+---
+
+## 🗄️ 14-Table BCNF Database & Diagrams
+
+The [`database/`](./database) directory provides standalone PostgreSQL scripts and visual architecture diagrams ready for inspection or direct execution:
+
+- [`DDL.sql`](./database/DDL.sql) — 14 BCNF tables, foreign keys, check constraints, and composite/partial indexes (`idx_rides_pending`)
+- [`DataInsertion.sql`](./database/DataInsertion.sql) — Idempotent seed & sample dataset across all 14 tables with synchronized `SERIAL` sequences
+- [`DQL.sql`](./database/DQL.sql) — 15 analytical PostgreSQL queries (driver earnings leaderboard, double-entry wallet ledger reconciliation, compliance expiry alerts, rating audits, state transition latency)
 - [`RelationalDiagram.pdf`](./database/RelationalDiagram.pdf) — Full Workbench-style Crow's-Foot schema diagram (`PK`/`FK` keys, column types, indexes)
+- [`database/README.md`](./database/README.md) — Complete schema dictionary and `psql` quick guide
 
-![RideVault Entity-Relationship Diagram](./database/ERD.jpg)
+![RideVault 14-Table BCNF Entity-Relationship Diagram](./database/ERD.jpg)
+
+---
+
+## 🧪 Automated Integration Test Suite
+
+All tests execute against live **PostgreSQL** (`Spring Boot 4` test starters + `MockMvc` + `ExecutorService`):
+
+| Test Class | What It Verifies | Source |
+| :--- | :--- | :--- |
+| **End-to-End Boot 4 Smoke** | Public hub overview, OpenAPI JSON, BCrypt register/login, SHA-256 refresh token rotation & replay block (`401`), `@MapsId` rider profile update, booking, Start PIN mismatch (`400`) & match, 80/20 settlement, 5★ rating update, audit timeline, pagination, and logout. | [`RideVaultSpringBoot4SmokeTest.java`](./ridevault-backend/src/test/java/com/ridevault/api/RideVaultSpringBoot4SmokeTest.java) |
+| **10-Thread Concurrency Race** | Fires simultaneous accept requests across competing threads on one `PENDING` ride—proving only 1 driver succeeds while competing threads receive `RideAlreadyClaimedException`. | [`RideConcurrencyTest.java`](./ridevault-backend/src/test/java/com/ridevault/concurrency/RideConcurrencyTest.java) |
+| **ACID Settlement Rollback** | Simulates a runtime crash mid-settlement to prove `@Transactional(rollbackFor = Exception.class)` rolls back wallet balance updates and ledger inserts together with zero drift. | [`WalletSettlementRollbackTest.java`](./ridevault-backend/src/test/java/com/ridevault/settlement/WalletSettlementRollbackTest.java) |
 
 ---
 
 ## 📁 Repository Structure
 
 ```text
-ridevault-cli/
-├── database/                        # Standalone PostgreSQL 14-table BCNF SQL scripts & diagrams
-│   ├── DDL.sql                      # Complete DDL (14 tables, constraints, indexes)
-│   ├── DataInsertion.sql            # Full idempotent seed & sample dataset (all 14 tables)
-│   ├── DQL.sql                      # 15 analytical PostgreSQL queries
-│   ├── ERD.jpg                      # Chen-notation Entity-Relationship Diagram
-│   ├── RelationalDiagram.pdf        # Crow's-Foot Workbench relational diagram
-│   └── README.md                    # Database schema & Mermaid diagram docs
-├── ridevault-backend/               # Spring Boot 4 / Spring 7 REST API + Embedded Web Portals
-│   ├── pom.xml
-│   ├── README.md                    # Full REST API endpoint reference & test commands
-│   ├── RideVault.postman_collection.json
+RideVault-Backend/
+├── database/                                  # Standalone 14-table BCNF SQL scripts & ER diagrams
+│   ├── DDL.sql                                # Complete PostgreSQL DDL (tables, constraints, indexes)
+│   ├── DataInsertion.sql                      # Full idempotent seed dataset & sequence synchronization
+│   ├── DQL.sql                                # 15 analytical PostgreSQL queries
+│   ├── ERD.jpg                                # Chen-notation Entity-Relationship Diagram
+│   ├── RelationalDiagram.pdf                  # Crow's-Foot Workbench relational diagram
+│   └── README.md                              # Schema dictionary & psql guide
+├── ridevault-backend/                         # Spring Boot 4 / Spring 7 REST API + Web Portals
+│   ├── pom.xml                                # Java 21, Spring Boot 4.1.2, JJWT 0.13.0, SpringDoc 3.2.0
+│   ├── README.md                              # Full REST API endpoint reference
+│   ├── RideVault.postman_collection.json      # Postman v2.1 API collection (Spring Boot 4 + JWT)
 │   └── src/
 │       ├── main/java/com/ridevault/
-│       │   ├── config/              # SecurityConfig, JwtService, JwtAuthenticationFilter, OpenAPI, WebConfig
-│       │   ├── controller/          # Auth, Ride, Rider, Driver, Wallet, Admin, Hub REST controllers
-│       │   ├── dto/                 # Validated request & response DTOs (incl. PageResponse)
-│       │   ├── entity/              # 14 BCNF JPA entities & enums
-│       │   ├── exception/           # Centralized @RestControllerAdvice exception mapping
-│       │   ├── repository/          # 14 Spring Data JPA repositories (optimistic & pessimistic locks)
-│       │   └── service/             # Business services, RideStateMachine, PricingService, @Scheduled expiry
+│       │   ├── config/                        # SecurityConfig, JwtService, JwtAuthenticationFilter, OpenAPI, WebConfig
+│       │   ├── controller/                    # Auth, Ride, Rider, Driver, Wallet, Admin, Hub REST controllers
+│       │   ├── dto/                           # Jakarta @Valid request & standardized response DTOs
+│       │   ├── entity/                        # 14 BCNF JPA entities & enums
+│       │   ├── exception/                     # Centralized @RestControllerAdvice error mapping
+│       │   ├── repository/                    # 14 Spring Data JPA repositories (optimistic & pessimistic locks)
+│       │   └── service/                       # Pricing, Ride, WalletSettlement, @Scheduled expiry & RideStateMachine
 │       ├── main/resources/
-│       │   ├── application.yml      # Safe config with env-var placeholders + optional local import
-│       │   ├── application-local.yml.example
-│       │   ├── schema.sql           # Auto-initialized SQL schema for Spring Boot startup
-│       │   └── static/              # Operations Hub (index.html), Rider Portal, Driver Portal
-│       └── test/java/com/ridevault/ # E2E Smoke, 10-thread Concurrency & ACID Rollback integration tests
-├── ridevault-cli/                   # Legacy Core Java + JDBC console prototype
-├── docker-compose.yml               # One-command PostgreSQL 16 setup loading database/ scripts
-├── .gitignore                       # Excludes target/, bin/, .idea/, and local secrets
+│       │   ├── application.yml                # Env-var safe defaults + optional local YAML import
+│       │   ├── application-local.yml.example  # Local PostgreSQL & JWT secret template
+│       │   ├── schema.sql                     # Auto-initialized PostgreSQL DDL
+│       │   └── static/                        # Operations Hub (index.html), Rider & Driver Portals
+│       └── test/java/com/ridevault/           # E2E Smoke, Multi-Thread Concurrency & ACID Rollback tests
+├── .gitignore                                 # Excludes target/, IDE files & local secret configs
 └── README.md
 ```
 
 ---
 
-## 🚀 Quick Start (Run Locally)
+## 🚀 Quick Start (Local PostgreSQL + Maven)
 
-### 1. Start PostgreSQL
-Run PostgreSQL automatically with Docker Compose (initializes `ridevault` from `database/DDL.sql` and `database/DataInsertion.sql`):
+### Prerequisites
+- **Java 21** (JDK 21+)
+- **Maven 3.9+**
+- **PostgreSQL 16+** running locally on `localhost:5432`
 
+### 1. Clone the Repository
 ```bash
-docker compose up -d
+git clone https://github.com/devgorasiya07/RideVault-Backend.git
+cd RideVault-Backend
 ```
 
-Or create the database on a local PostgreSQL instance:
-
+### 2. Initialize PostgreSQL Database
+Create the `ridevault` database and apply the 14-table schema and sample data:
 ```bash
 createdb -U postgres ridevault
 psql -U postgres -d ridevault -f database/DDL.sql
 psql -U postgres -d ridevault -f database/DataInsertion.sql
 ```
 
-Then copy [`application-local.yml.example`](./ridevault-backend/src/main/resources/application-local.yml.example) to `ridevault-backend/src/main/resources/application-local.yml` (gitignored) and set your PostgreSQL password.
+### 3. Configure Local Credentials
+Copy [`application-local.yml.example`](./ridevault-backend/src/main/resources/application-local.yml.example) to `ridevault-backend/src/main/resources/application-local.yml` (gitignored) and set your PostgreSQL password and 256-bit Base64 JWT secret:
+```yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ridevault
+    username: postgres
+    password: your_local_postgres_password
 
-### 2. Run the Spring Boot Backend & Tests
+application:
+  security:
+    jwt:
+      secret-key: replace-with-your-256-bit-base64-jwt-secret
+```
 
+### 4. Run Tests & Start the Server
 ```bash
 cd ridevault-backend
 mvn test               # Runs E2E Smoke, 10-Thread Concurrency & ACID Rollback tests
 mvn spring-boot:run    # Starts embedded Tomcat on http://localhost:8080
 ```
 
-### 3. Explore Portals & API Docs
-- **Operations Hub:** `http://localhost:8080/`
-- **Rider Portal:** `http://localhost:8080/rider.html`
-- **Driver Portal:** `http://localhost:8080/driver.html`
-- **OpenAPI / Swagger UI:** `http://localhost:8080/swagger-ui.html`
+### 5. Explore Live Web Portals & API Docs
+| Interface | URL / Resource | Purpose |
+| :--- | :--- | :--- |
+| **Operations Hub** | `http://localhost:8080/` | Live PostgreSQL telemetry, fleet metrics & active surge zones |
+| **Rider Portal** | `http://localhost:8080/rider.html` | Route fare estimation, booking, Start PIN display, SOS profile & 5★ rating |
+| **Driver Portal** | `http://localhost:8080/driver.html` | Online/Offline availability, atomic ride claiming, Start PIN entry & wallet payouts |
+| **Swagger / OpenAPI UI** | `http://localhost:8080/swagger-ui.html` | Interactive OpenAPI 3 endpoint explorer with JWT Bearer auth |
+| **Postman Collection** | [`RideVault.postman_collection.json`](./ridevault-backend/RideVault.postman_collection.json) | Pre-configured requests with automatic JWT token capture |
 
 See [`ridevault-backend/README.md`](./ridevault-backend/README.md) for the complete REST API endpoint reference.

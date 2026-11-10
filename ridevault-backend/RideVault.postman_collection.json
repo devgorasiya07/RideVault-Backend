@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "RideVault REST API (Spring Boot 3.3 + JWT)",
+    "name": "RideVault REST API (Spring Boot 4 + JWT)",
     "_postman_id": "ridevault-api-collection-2026",
     "description": "Complete REST API collection for RideVault with JWT authentication, optimistic locking ride claims, and transactional wallet settlements.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -168,7 +168,7 @@
           }
         },
         {
-          "name": "Update Ride Status (ARRIVED / IN_PROGRESS)",
+          "name": "Mark Driver Arrived (ARRIVED)",
           "request": {
             "method": "PUT",
             "header": [],
@@ -179,6 +179,23 @@
               "query": [
                 {"key": "targetStatus", "value": "ARRIVED"},
                 {"key": "reason", "value": "Driver arrived at pickup"}
+              ]
+            }
+          }
+        },
+        {
+          "name": "Start Ride (IN_PROGRESS + 4-Digit Start PIN)",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/rides/1/status?targetStatus=IN_PROGRESS&startPin=1234&reason=Rider%20boarded",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "rides", "1", "status"],
+              "query": [
+                {"key": "targetStatus", "value": "IN_PROGRESS"},
+                {"key": "startPin", "value": "1234"},
+                {"key": "reason", "value": "Rider boarded"}
               ]
             }
           }

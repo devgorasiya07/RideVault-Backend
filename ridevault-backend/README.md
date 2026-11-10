@@ -53,19 +53,16 @@ WHERE ride_id = :rideId
 
 ## 🚀 Running the Application
 
-### 1. Database Setup
-Start PostgreSQL using Docker Compose from the repo root (creates `ridevault` and applies `../database/DDL.sql` + `../database/DataInsertion.sql`):
+### 1. Database Setup (PostgreSQL 16+)
+Create the `ridevault` database and load the 14-table BCNF schema and seed data:
 
 ```bash
-docker compose up -d
+createdb -U postgres ridevault
+psql -U postgres -d ridevault -f ../database/DDL.sql
+psql -U postgres -d ridevault -f ../database/DataInsertion.sql
 ```
 
-Or on a local PostgreSQL server:
-```sql
-CREATE DATABASE ridevault;
-```
-
-Copy `src/main/resources/application-local.yml.example` to `src/main/resources/application-local.yml` (gitignored) and enter your PostgreSQL credentials.
+Then copy `src/main/resources/application-local.yml.example` to `src/main/resources/application-local.yml` (gitignored) and enter your PostgreSQL password and JWT secret.
 
 ### 2. Build & Run
 
